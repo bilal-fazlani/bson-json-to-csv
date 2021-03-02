@@ -3,8 +3,7 @@ package tech.bilal
 import munit.FunSuite
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
 import tech.bilal.Extensions.BsonValueExt
-import tech.bilal.Node.StringNodeDsl
-import Node._
+import tech.bilal.Node._
 
 class JsonPathTest extends FunSuite {
   private val json: String =
@@ -61,11 +60,11 @@ class JsonPathTest extends FunSuite {
   }
 
   test("can get int from 2nd level nested object") {
-    "person".n --> "age".n returns BsonInt32(100)
+    "person" / "age" returns BsonInt32(100)
   }
 
   test("can get int from 3rd level nested object") {
-    "person".n --> "department".n --> "id".n returns BsonInt32(3)
+    "person" / "department" / "id" returns BsonInt32(3)
   }
 
   test("complex object from document returns None") {
@@ -73,24 +72,24 @@ class JsonPathTest extends FunSuite {
   }
 
   test("can get simple value from an array") {
-    "person".n --> "alias".n --> 1.n returns BsonString("pqr")
+    "person" / "alias" / 1 returns BsonString("pqr")
   }
 
   test("can get simple value from an object in an array") {
-    "person".n --> "addresses".n --> 0.n --> "city".n returns BsonString(
+    "person" / "addresses" / 0 / "city" returns BsonString(
       "mumbai"
     )
   }
 
   test("complex object from array returns None") {
-    ("person".n --> "addresses".n --> 1.n).returnsNone()
+    ("person" / "addresses" / 1).returnsNone()
   }
 
   test("simple matrix") {
-    "simple-matrix".n --> 1.n --> 0.n returns BsonInt32(3)
+    "simple-matrix" / 1 / 0 returns BsonInt32(3)
   }
 
   test("complex matrix") {
-    "complex-matrix".n --> 1.n --> 0.n --> "id".n returns BsonInt32(3)
+    "complex-matrix" / 1 / 0 / "id" returns BsonInt32(3)
   }
 }

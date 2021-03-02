@@ -40,7 +40,7 @@ class SchemaGen(implicit mat: Materializer) extends StreamFlows {
       currentNode: Node
   ): JsonPath =
     prev match {
-      case Some(path) => path --> currentNode
+      case Some(path) => path / currentNode
       case None       => currentNode
     }
 
