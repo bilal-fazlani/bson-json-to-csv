@@ -5,10 +5,10 @@ import akka.actor.ActorSystem
 import akka.stream.IOResult
 import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
-import org.mongodb.scala.bson._
+import org.mongodb.scala.bson.*
 import scopt.OParser
-import tech.bilal.Extensions._
-import tech.bilal.StringEncoder._
+import tech.bilal.Extensions.*
+import tech.bilal.StringEncoder.*
 
 import java.io.File
 import java.nio.file.{Path, StandardOpenOption}
@@ -21,42 +21,45 @@ case class CLIOptions(
     outputFile: Option[File] = None
 )
 
-object MongoMain extends App with StreamFlows {
-  val builder = OParser.builder[CLIOptions]
-  val parser = {
-    import builder._
-    OParser.sequence(
-      programName("bsonToCsv"),
-      head("bsonToCsv", "1.x"),
-      arg[File]("input-file")
-        .valueName("<file>")
-        .required()
-        .text("[REQUIRED] input bson file")
-        .validate(f =>
-          if (f.exists()) success
-          else failure(s"file ${f.getPath} does not exist")
-        )
-        .action((f, c) => c.copy(inputFile = f)),
-      arg[Option[File]]("output-file")
-        .valueName("<file>")
-        .text(
-          "Path for output csv file. If a file exits, it will be overridden. " +
-            "If no value is provided, a new file with same path + name is " +
-            "created with '.csv' extension"
-        )
-        .optional()
-        .action((o, c) => c.copy(outputFile = o)),
-      help("help").text("prints this usage text")
-    )
+object MongoMain extends StreamFlows {
+
+  def main(args:Array[String]):Unit = {
+    val builder = OParser.builder[CLIOptions]
+    val parser = {
+      import builder.*
+      OParser.sequence(
+        programName("bsonToCsv"),
+        head("bsonToCsv", "1.x"),
+        arg[File]("input-file")
+          .valueName("<file>")
+          .required()
+          .text("[REQUIRED] input bson file")
+          .validate(f =>
+            if (f.exists()) success
+            else failure(s"file ${f.getPath} does not exist")
+          )
+          .action((f, c) => c.copy(inputFile = f)),
+        arg[Option[File]]("output-file")
+          .valueName("<file>")
+          .text(
+            "Path for output csv file. If a file exits, it will be overridden. " +
+              "If no value is provided, a new file with same path + name is " +
+              "created with '.csv' extension"
+          )
+          .optional()
+          .action((o, c) => c.copy(outputFile = o)),
+        help("help").text("prints this usage text")
+      )
+    }
+
+    OParser.parse(parser, args, CLIOptions()) match {
+      case Some(options) =>
+        run(options)
+      case None =>
+    }
   }
 
-  OParser.parse(parser, args, CLIOptions()) match {
-    case Some(options) =>
-      main(options)
-    case None =>
-  }
-
-  def main(options: CLIOptions): Unit = {
+  def run(options: CLIOptions): Unit = {
     implicit val system: ActorSystem = ActorSystem("main")
 
     val schema = new SchemaGen

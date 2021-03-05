@@ -2,8 +2,8 @@ package tech.bilal
 
 import munit.FunSuite
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
-import tech.bilal.Extensions.BsonValueExt
-import tech.bilal.Node._
+import tech.bilal.Extensions.*
+import tech.bilal.Node.*
 
 class JsonPathTest extends FunSuite {
   private val json: String =
@@ -35,8 +35,9 @@ class JsonPathTest extends FunSuite {
       |}""".stripMargin
   private val document = BsonDocument.apply(json)
 
-  implicit class TestDsl(path: JsonPath) {
-    def returns(bsonValue: BsonValue): Unit = {
+
+  extension (path: JsonPath){
+    infix def returns(bsonValue: BsonValue): Unit = {
       val value = document.getLeafValue(path)
       assertEquals(value, Some(bsonValue))
     }
@@ -45,8 +46,8 @@ class JsonPathTest extends FunSuite {
       assertEquals(document.getLeafValue(path), None)
   }
 
-  implicit class TestDsl2(path: Node) {
-    def returns(bsonValue: BsonValue): Unit = {
+  extension (path: Node) {
+    infix def returns(bsonValue: BsonValue): Unit = {
       val value = document.getLeafValue(path)
       assertEquals(value, Some(bsonValue))
     }

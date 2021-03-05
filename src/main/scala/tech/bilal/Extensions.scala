@@ -9,12 +9,12 @@ import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 object Extensions {
-  implicit class FExtension[T](f: Future[T]) {
+  extension [T](f: Future[T]) {
     def block(duration: FiniteDuration = 5.seconds): T =
       Await.result(f, duration)
   }
 
-  implicit class BsonValueExt(doc: BsonValue) {
+  extension (doc: BsonValue) {
 
     def getLeafValue(path: JsonPath): Option[BsonValue] =
       getValue(path, doc, 0) match {

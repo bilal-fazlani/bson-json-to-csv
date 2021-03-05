@@ -3,14 +3,14 @@ package tech.bilal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
-import tech.bilal.Extensions.FExtension
+import tech.bilal.Extensions.*
 
 class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("can generate schema") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, _] = Source.single(
+    val singleSource: Source[ByteString, ?] = Source.single(
       ByteString(
         """
           |{
@@ -63,7 +63,7 @@ class SchemaGenTest extends CustomFixtures {
     implicit val mat: Materializer = Materializer(actorSystem)
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, _] = Source.single(
+    val singleSource: Source[ByteString, ?] = Source.single(
       ByteString(
         """
           |{
@@ -129,7 +129,7 @@ class SchemaGenTest extends CustomFixtures {
     implicit val mat: Materializer = Materializer(actorSystem)
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, _] = Source.single(
+    val singleSource: Source[ByteString, ?] = Source.single(
       ByteString(
         """
           |{
@@ -164,7 +164,7 @@ class SchemaGenTest extends CustomFixtures {
     implicit val mat: Materializer = Materializer(actorSystem)
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, _] = Source.single(
+    val singleSource: Source[ByteString, ?] = Source.single(
       ByteString(
         """
           |{

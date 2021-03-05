@@ -4,8 +4,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
-import Node._
-import scala.jdk.CollectionConverters._
+import Node.*
+import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 
 class SchemaGen(implicit mat: Materializer) extends StreamFlows {

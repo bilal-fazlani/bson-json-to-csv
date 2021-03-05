@@ -4,11 +4,18 @@ version := "0.1.0-SNAPSHOT"
 
 organization := "tech.bilal"
 
-scalaVersion := "2.13.5"
+scalaVersion := "3.0.0-RC1"
+
+resolvers += Resolver.JCenterRepository
 
 testFrameworks += new TestFramework("munit.Framework")
 
 enablePlugins(NativeImagePlugin)
+
+scalacOptions ++= Seq(
+      "-source", "future",
+      "-deprecation",
+    )
 
 //GRAAL NATIVE IMAGE
 nativeImageOptions ++= Seq("--initialize-at-build-time", "--no-fallback")

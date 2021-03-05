@@ -34,7 +34,7 @@ trait StreamFlows {
   def unique[T]: Flow[T, T, NotUsed] =
     Flow[T].statefulMapConcat(() => {
       var set = Set.empty[T]
-      str: T => {
+      (str: T) => {
         val list =
           if (set.contains(str)) List.empty
           else List(str)

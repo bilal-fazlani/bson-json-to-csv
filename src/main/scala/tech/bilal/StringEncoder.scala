@@ -1,40 +1,40 @@
 package tech.bilal
 
-import org.mongodb.scala.bson._
+import org.mongodb.scala.bson.*
 
 trait StringEncoder[A] {
   def encode(input: A): String
 }
 object StringEncoder {
-  implicit class Extension[T: StringEncoder](t: T) {
-    def encodeToString: String = implicitly[StringEncoder[T]].encode(t)
+  extension [T: StringEncoder](t: T) {
+    def encodeToString: String = summon[StringEncoder[T]].encode(t)
   }
 
-  implicit object Int32Enc extends StringEncoder[BsonInt32] {
+  given StringEncoder[BsonInt32] = new {
     override def encode(input: BsonInt32): String = input.getValue.toString
   }
-  implicit object BsonStringEnc extends StringEncoder[BsonString] {
+  given StringEncoder[BsonString] = new {
     override def encode(input: BsonString): String = input.getValue
   }
-  implicit object BsonBooleanEnc extends StringEncoder[BsonBoolean] {
+  given StringEncoder[BsonBoolean] = new {
     override def encode(input: BsonBoolean): String = input.getValue.toString
   }
-  implicit object BsonDateTimeEnc extends StringEncoder[BsonDateTime] {
+  given StringEncoder[BsonDateTime] = new {
     override def encode(input: BsonDateTime): String = input.getValue.toString
   }
-  implicit object BsonObjectIdEnc extends StringEncoder[BsonObjectId] {
+  given StringEncoder[BsonObjectId] = new {
     override def encode(input: BsonObjectId): String = input.getValue.toString
   }
-  implicit object BsonInt64Enc extends StringEncoder[BsonInt64] {
+  given StringEncoder[BsonInt64] = new {
     override def encode(input: BsonInt64): String = input.getValue.toString
   }
-  implicit object BsonDoubleEnc extends StringEncoder[BsonDouble] {
+  given StringEncoder[BsonDouble] = new {
     override def encode(input: BsonDouble): String = input.getValue.toString
   }
-  implicit object BsonDecimal128Enc extends StringEncoder[BsonDecimal128] {
+  given StringEncoder[BsonDecimal128] = new {
     override def encode(input: BsonDecimal128): String = input.getValue.toString
   }
-  implicit object BsonTimestampEnc extends StringEncoder[BsonTimestamp] {
+  given StringEncoder[BsonTimestamp] = new {
     override def encode(input: BsonTimestamp): String = input.getValue.toString
   }
 }

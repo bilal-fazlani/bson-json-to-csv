@@ -1,6 +1,6 @@
 package tech.bilal
 
-import tech.bilal.Node._
+import tech.bilal.Node.*
 
 case class JsonPath(seq: Seq[Node]) {
   def /(node: Node): JsonPath = JsonPath(seq.appended(node))
