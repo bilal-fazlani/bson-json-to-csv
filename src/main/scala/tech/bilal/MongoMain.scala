@@ -28,8 +28,8 @@ object MongoMain extends StreamFlows {
     val parser = {
       import builder.*
       OParser.sequence(
-        programName("bsonToCsv"),
-        head("bsonToCsv", "1.x"),
+        programName("bson-json-to-csv"),
+        head("convert nested bson/json files to flat csv files"),
         arg[File]("input-file")
           .valueName("<file>")
           .required()
