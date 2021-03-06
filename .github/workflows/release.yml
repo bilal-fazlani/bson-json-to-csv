@@ -28,7 +28,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: bson-json-to-csv
-        body_path: changelog/${{ github.workflow }}.md
+        body_path: changelog/${{ github.ref }}.md
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
