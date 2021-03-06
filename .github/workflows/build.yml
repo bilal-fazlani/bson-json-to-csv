@@ -1,7 +1,11 @@
 name: Build
 
 on:
-  push
+  push:
+    paths-ignore:
+      - '**.md'
+      - .github/workflows/release.yml
+      - '**.png'
 
 jobs:
   build:
