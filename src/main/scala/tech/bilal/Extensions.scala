@@ -1,5 +1,6 @@
 package tech.bilal
 
+import org.bson.BsonInvalidOperationException
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
 import tech.bilal.Node.{Index, Name}
 
@@ -29,6 +30,7 @@ object Extensions {
         Option(v)
       } catch {
         case NonFatal(_: NullPointerException) => None
+        case NonFatal(x: BsonInvalidOperationException) => None 
       }
 
     @tailrec

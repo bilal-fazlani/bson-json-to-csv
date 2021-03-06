@@ -13,9 +13,10 @@ testFrameworks += new TestFramework("munit.Framework")
 enablePlugins(NativeImagePlugin)
 
 scalacOptions ++= Seq(
-      "-source", "future",
-      "-deprecation",
-    )
+  "-source",
+  "future",
+  "-deprecation"
+)
 
 //GRAAL NATIVE IMAGE
 nativeImageOptions ++= Seq("--initialize-at-build-time", "--no-fallback")
@@ -35,5 +36,6 @@ libraryDependencies ++= Seq(
   Akka.jsonStreaming,
   Mongo.`mongo-scala-driver`,
   Libs.scopt,
+  Libs.`scala-csv` % Test,
   Libs.munit % Test
 )

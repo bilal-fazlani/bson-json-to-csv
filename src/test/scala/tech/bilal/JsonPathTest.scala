@@ -35,7 +35,6 @@ class JsonPathTest extends FunSuite {
       |}""".stripMargin
   private val document = BsonDocument.apply(json)
 
-
   extension (path: JsonPath){
     infix def returns(bsonValue: BsonValue): Unit = {
       val value = document.getLeafValue(path)
