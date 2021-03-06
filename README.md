@@ -43,7 +43,7 @@ jane,,,java,delhi,scala,big data
 
 The headers json-paths of corresponding json fields
 
-
+Notice that as show in above example, the order of columns may not be same as order of json fields
 
 
 
