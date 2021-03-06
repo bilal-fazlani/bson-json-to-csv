@@ -41,14 +41,15 @@ john,mumbai,india,,,,
 jane,,,java,delhi,scala,big data
 ```
 
+
+The headers are json-paths of corresponding json fields
+
+
 | .name | .location.city | .location.country | .tags[1] | .location | .tags[0] | .tags[2] |
 |-------|----------------|-------------------|----------|-----------|----------|----------|
 | john  | mumbai         | india             |          |           |          |          |
 | jane  |                |                   | java     | delhi     | scala    | big data |
 
-
-
-The headers json-paths of corresponding json fields
 
 Notice that as shown in above example, the order of json fields may not reflect exactly same in the csv. 
 However the indexes of arrays will be maintained correctly.
