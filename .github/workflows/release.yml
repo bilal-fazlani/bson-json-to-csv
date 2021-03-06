@@ -13,13 +13,13 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v2
+    - name: cache
+      uses: coursier/cache-action@v5      
     - name: coursier-setup
       uses: laughedelic/coursier-setup@v1
       with:
         jvm: adopt:11
         apps: sbtn
-    - name: cache
-      uses: coursier/cache-action@v5
     - name: build
       run: |
         sbtn publishLocal
