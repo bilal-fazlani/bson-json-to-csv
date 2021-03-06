@@ -27,8 +27,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: bson-json-to-csv
-        body_path: changelog/${{ github.event.release.tag_name }}.md
-        tag_name: ${{ github.event.release.tag_name }}
+        body_path: changelog/${{ github.workflow }}.md
+        tag_name: ${{ github.workflow }}
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
