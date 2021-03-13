@@ -23,10 +23,8 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
     println("-" * 60)
     println("Generating schema...")
 
-    val params = schema
-      .generate(source)
-      .via(viaIndex(x => print(s"\rfound ${x._2 + 1} columns...")))
-      .runWith(Sink.collection)
+    val (dd,ee) = schema.generate(source)
+      .via(viaIndex(x => print(s"\rfound ${x._2 + 1} unique fields...")))
       .recover {
         case NonFatal(_: FramingException) =>
           println("Invalid JSON encountered")
@@ -37,8 +35,10 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
           system.terminate().block()
           sys.exit(1)
       }
-      .block()
-      .toList
+      .toMat(Sink.collection)(Keep.both)
+      .run
+
+    val (totalRows, params) = (dd.flatMap(d => ee.map(e => (d,e.toList)))).block()
 
     println("DONE")
     println("-" * 60)
@@ -51,7 +51,7 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
         .via(jsonFrame)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
-        .via(viaIndex(x => print(s"\rprocessed ${x._2 + 1} rows...")))
+        .via(viaIndex(x => print(s"\rprocessed ${x._2 + 1}/${totalRows.toInt} rows...")))
 
     val header: Source[CSVRow, NotUsed] =
       Source.single(CSVRow(params.map(_.toString)))

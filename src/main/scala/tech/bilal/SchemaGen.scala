@@ -1,24 +1,42 @@
 package tech.bilal
 
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.*
 import akka.util.ByteString
+import scala.concurrent.Future
+import akka.stream.IOResult
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
 import Node.*
+import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 
-class SchemaGen(implicit mat: Materializer) extends StreamFlows {
+opaque type TotalRows = Int
 
-  def generate[T](source: Source[ByteString, T]): Source[JsonPath, T] =
+object TotalRows{
+  def apply(v:Int):TotalRows = v
+}
+extension (v: TotalRows) {
+  def toInt:Int = v
+}
+
+class SchemaGen(implicit mat: Materializer, ec:ExecutionContext) extends StreamFlows {
+
+  private def countSink[T] = Sink.fold[Int, T](0)((i, _) => i + 1)
+
+  def generate(source: Source[ByteString, Future[IOResult]]) : Source[JsonPath, Future[TotalRows]] =
     source
       .via(lineMaker)
       .dropWhile(!_.utf8String.startsWith("{"))
       .via(jsonFrame)
+      .alsoToMat(countSink)(Keep.both)
       .via(bsonConvert)
       .map(docToPaths(_, None))
       .mapConcat(identity)
       .via(unique)
+      .mapMaterializedValue(x => x match {
+        case (a,b) => a.flatMap(_ => b.map(TotalRows.apply))
+      })
 
   private def docToPaths(
       doc: BsonDocument,
