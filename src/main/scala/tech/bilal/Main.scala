@@ -1,6 +1,7 @@
 package tech.bilal
 
 import akka.NotUsed
+import scala.util.{Success, Failure}
 import akka.actor.ActorSystem
 import akka.stream.IOResult
 import akka.stream.scaladsl.Framing.FramingException
@@ -21,7 +22,7 @@ case class CLIOptions(
     outputFile: Option[File] = None
 )
 
-object MongoMain extends StreamFlows {
+object Main extends StreamFlows {
 
   def main(args: Array[String]): Unit = {
     val builder = OParser.builder[CLIOptions]
@@ -64,8 +65,11 @@ object MongoMain extends StreamFlows {
 
     val csvGen = new CsvGen(new SchemaGen, Printer.console)
     val stream = csvGen.generateCsv(file(options.inputFile.getPath))
-    
-    stream
+    val fileName = options.outputFile
+              .map(_.getPath)
+              .getOrElse(options.inputFile.getPath + ".csv")
+
+    val f = stream
       .via(byteString)
       .recover {
         case NonFatal(err) =>
@@ -73,28 +77,20 @@ object MongoMain extends StreamFlows {
           system.terminate().block()
           sys.exit(1)
       }
-      .toMat(
-        FileIO.toPath(
-          Path.of(
-            options.outputFile
-              .map(_.getPath)
-              .getOrElse(options.inputFile.getPath + ".csv")
-          ),
-          Set(
-            StandardOpenOption.CREATE,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.TRUNCATE_EXISTING
-          ),
-          0
-        )
-      )(Keep.both)
+      .toMat(fileSink(fileName))(Keep.both)
       .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
       .run()
-      .block()
 
-    system.terminate().block()
-
-    println("DONE")
-    println("-" * 60)
+    f.onComplete{
+      case Success(_) => 
+        println("DONE")
+        println("-" * 60)
+        system.terminate().block()
+      case Failure(err) => 
+        println("FAILED")
+        println("x" * 60)
+        err.printStackTrace
+        system.terminate().block()
+    }
   }
 }

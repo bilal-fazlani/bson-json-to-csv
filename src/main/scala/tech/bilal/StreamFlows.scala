@@ -1,7 +1,7 @@
 package tech.bilal
 
 import java.nio.file.Path
-
+import java.nio.file.{Path, StandardOpenOption}
 import akka.NotUsed
 import akka.stream.IOResult
 import akka.stream.scaladsl.{FileIO, Flow, Framing, JsonFraming, Sink, Source}
@@ -30,6 +30,16 @@ trait StreamFlows {
 
   val byteString: Flow[CSVRow, ByteString, NotUsed] =
     Flow.fromFunction[CSVRow, ByteString](x => ByteString.apply(x.toString))
+
+  def fileSink(path:String) = FileIO.toPath(
+          Path.of(path),
+          Set(
+            StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.TRUNCATE_EXISTING
+          ),
+          0
+        )
 
   def unique[T]: Flow[T, T, NotUsed] =
     Flow[T].statefulMapConcat(() => {
