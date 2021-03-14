@@ -4,13 +4,16 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import tech.bilal.Extensions.*
+import scala.concurrent.{ExecutionContext, Future}
+import akka.stream.IOResult
 
 class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("can generate schema") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
+    given ExecutionContext = actorSystem.dispatcher
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, ?] = Source.single(
+    val singleSource: Source[ByteString, Future[IOResult]] = Source.single(
       ByteString(
         """
           |{
@@ -38,7 +41,7 @@ class SchemaGenTest extends CustomFixtures {
           |}
           |""".stripMargin
       )
-    )
+    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
       schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
@@ -61,9 +64,10 @@ class SchemaGenTest extends CustomFixtures {
 
   actorSystemFixture.test("array support") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
+    given ExecutionContext = actorSystem.dispatcher
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, ?] = Source.single(
+    val singleSource = Source.single(
       ByteString(
         """
           |{
@@ -97,7 +101,7 @@ class SchemaGenTest extends CustomFixtures {
           |}
           |""".stripMargin
       )
-    )
+    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     //   "simple-matrix": [[1,2], [3,4]],
     //   "complex-matrix": [[{"id":1},{"id":2}], [{"id":3},{"id":4}]],
@@ -127,9 +131,10 @@ class SchemaGenTest extends CustomFixtures {
 
   actorSystemFixture.test("matrix support") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
+    given ExecutionContext = actorSystem.dispatcher
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, ?] = Source.single(
+    val singleSource = Source.single(
       ByteString(
         """
           |{
@@ -138,7 +143,7 @@ class SchemaGenTest extends CustomFixtures {
           |}
           |""".stripMargin
       )
-    )
+    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
       schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
@@ -162,9 +167,10 @@ class SchemaGenTest extends CustomFixtures {
 
   actorSystemFixture.test("conflicting data types") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
+    given ExecutionContext = actorSystem.dispatcher
     val schemaGen = new SchemaGen
 
-    val singleSource: Source[ByteString, ?] = Source.single(
+    val singleSource = Source.single(
       ByteString(
         """
           |{
@@ -187,7 +193,7 @@ class SchemaGenTest extends CustomFixtures {
           |}
           |""".stripMargin
       )
-    )
+    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
       schemaGen.generate(singleSource).runWith(Sink.collection).block().toList

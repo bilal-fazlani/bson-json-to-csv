@@ -13,7 +13,7 @@ import tech.bilal.Node
 import tech.bilal.CustomFixtures
 
 import java.io.{Reader, StringReader}
-import scala.concurrent.Future
+import scala.concurrent.{Future, ExecutionContext}
 
 class CsvGenTest extends CustomFixtures {
   private val json: String ="""
@@ -37,6 +37,7 @@ class CsvGenTest extends CustomFixtures {
   
   actorSystemFixture.test("can generate CSV"){ system =>
     given ActorSystem = system
+    given ExecutionContext = system.dispatcher
     val csvGen = new CsvGen(new SchemaGen(), fakePrinter)
     val source = Source.single(ByteString(json)).mapMaterializedValue(_ => Future.successful(IOResult(0)))
     val obtained: String = csvGen.generateCsv(source)
