@@ -21,7 +21,7 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
     println("-" * 60)
     println("Generating schema...")
 
-    val (dd,ee) = schema.generate(source)
+    val Schema(paths, totalRows) = schema.generate(source)
       .alsoTo(Sink.foreach(x => print(s"\rfound ${x.paths.size + 1} unique fields in ${x.rows} records... ")))
       .recover {
         case NonFatal(_: FramingException) =>
@@ -34,9 +34,11 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
           sys.exit(1)
       }
       .toMat(Sink.last)(Keep.both)
+      .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
       .run
+      .block()
 
-    val (params, totalRows) = (dd.flatMap(d => ee.map(e => (e.paths.toList, e.rows)))).block()
+    val params = paths.toList 
     
     println("DONE")
     println("-" * 60)
