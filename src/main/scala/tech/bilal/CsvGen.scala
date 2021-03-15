@@ -39,7 +39,7 @@ class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system:
 
     val params = paths.toList 
     
-    println(if noColor then "DONE" else "DONE".green)
+    println(if noColor then "DONE" else "DONE".green.bold)
 
     val contents: Source[CSVRow, Future[IOResult]] =
       source

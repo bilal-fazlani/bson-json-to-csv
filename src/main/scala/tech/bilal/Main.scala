@@ -89,10 +89,10 @@ object Main extends StreamFlows {
 
     f.onComplete{
       case Success(_) => 
-        println(if options.noColor then "DONE" else "DONE".green)
+        println(if options.noColor then "DONE" else "DONE".green.bold)
         system.terminate().block()
       case Failure(err) => 
-        println(if options.noColor then "FAILED" else "FAILED".red)
+        println(if options.noColor then "FAILED" else "FAILED".red.bold)
         err.printStackTrace
         system.terminate().block()
     }
