@@ -7,6 +7,7 @@ organization := "tech.bilal"
 scalaVersion := "3.0.0-RC1"
 
 resolvers += Resolver.JCenterRepository
+resolvers += "jitpack" at "https://jitpack.io"
 
 testFrameworks += new TestFramework("munit.Framework")
 
@@ -36,6 +37,7 @@ libraryDependencies ++= Seq(
   Akka.jsonStreaming,
   Mongo.`mongo-scala-driver`,
   Libs.scopt,
+  Libs.`scala-rainbow`,
   Libs.`scala-csv` % Test,
   Libs.munit % Test
 )

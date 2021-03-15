@@ -1,5 +1,6 @@
 package tech.bilal
 
+import com.bilalfazlani.scala.rainbow.*
 import akka.NotUsed
 import scala.util.{Success, Failure}
 import akka.actor.ActorSystem
@@ -19,7 +20,8 @@ import scala.util.control.NonFatal
 
 case class CLIOptions(
     inputFile: File = new File("."),
-    outputFile: Option[File] = None
+    outputFile: Option[File] = None,
+    noColor: Boolean = false
 )
 
 object Main extends StreamFlows {
@@ -49,6 +51,10 @@ object Main extends StreamFlows {
           )
           .optional()
           .action((o, c) => c.copy(outputFile = o)),
+        opt[Unit]("no-color")
+          .text("does not use colors for output text")
+          .optional()
+          .action((o, c) => c.copy(noColor = true)),
         help("help").text("prints this usage text")
       )
     }
@@ -63,7 +69,7 @@ object Main extends StreamFlows {
   def run(options: CLIOptions): Unit = {
     given system: ActorSystem = ActorSystem("main")
 
-    val csvGen = new CsvGen(new SchemaGen, Printer.console)
+    val csvGen = new CsvGen(new SchemaGen, Printer.console, options.noColor)
     val stream = csvGen.generateCsv(file(options.inputFile.getPath))
     val fileName = options.outputFile
               .map(_.getPath)
@@ -83,12 +89,10 @@ object Main extends StreamFlows {
 
     f.onComplete{
       case Success(_) => 
-        println("DONE")
-        println("-" * 60)
+        println(if options.noColor then "DONE" else "DONE".green)
         system.terminate().block()
       case Failure(err) => 
-        println("FAILED")
-        println("x" * 60)
+        println(if options.noColor then "FAILED" else "FAILED".red)
         err.printStackTrace
         system.terminate().block()
     }

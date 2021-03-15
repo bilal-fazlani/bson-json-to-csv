@@ -1,5 +1,6 @@
 package tech.bilal
 
+import com.bilalfazlani.scala.rainbow.*
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.IOResult
@@ -13,16 +14,14 @@ import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) extends StreamFlows {
+class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system: ActorSystem) extends StreamFlows {
 
   import printer.*
   
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
-    println("-" * 60)
-    println("Generating schema...")
 
     val Schema(paths, totalRows) = schema.generate(source)
-      .alsoTo(Sink.foreach(x => print(s"\rfound ${x.paths.size + 1} unique fields in ${x.rows} records... ")))
+      .alsoTo(Sink.foreach(x => print(s"\rGenerating schema: found ${x.paths.size + 1} unique fields in ${x.rows} records ")))
       .recover {
         case NonFatal(_: FramingException) =>
           println("Invalid JSON encountered")
@@ -40,9 +39,7 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
 
     val params = paths.toList 
     
-    println("DONE")
-    println("-" * 60)
-    println("Generating csv...")
+    println(if noColor then "DONE" else "DONE".green)
 
     val contents: Source[CSVRow, Future[IOResult]] =
       source
@@ -51,7 +48,14 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
         .via(jsonFrame)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
-        .via(viaIndex(x => print(s"\rprocessed ${(((x._2 + 1D) / totalRows.toDouble) * 100).toInt}%... ")))
+        .via(viaIndex{x => 
+          val pValue = (((x._2 + 1D) / totalRows.toDouble) * 100).toInt
+          val percentage = s"$pValue%"
+          val pText = if(noColor) percentage
+            else if(pValue == 100) percentage.green
+            else percentage.yellow
+          print(s"\rGenerating csv: $pText ")
+        })
 
     val header: Source[CSVRow, NotUsed] =
       Source.single(CSVRow(params.map(_.toString)))
