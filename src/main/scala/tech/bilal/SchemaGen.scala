@@ -11,32 +11,20 @@ import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 
-opaque type TotalRows = Int
-
-object TotalRows{
-  def apply(v:Int):TotalRows = v
-}
-extension (v: TotalRows) {
-  def toInt:Int = v
+case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
+    infix def +(morePaths: Set[JsonPath]): Schema = Schema(paths ++ morePaths, rows + 1)
 }
 
 class SchemaGen(implicit mat: Materializer, ec:ExecutionContext) extends StreamFlows {
 
-  private def countSink[T] = Sink.fold[Int, T](0)((i, _) => i + 1)
-
-  def generate(source: Source[ByteString, Future[IOResult]]) : Source[JsonPath, Future[TotalRows]] =
+  def generate(source: Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
     source
       .via(lineMaker)
       .dropWhile(!_.utf8String.startsWith("{"))
       .via(jsonFrame)
-      .alsoToMat(countSink)(Keep.both)
       .via(bsonConvert)
       .map(docToPaths(_, None))
-      .mapConcat(identity)
-      .via(unique)
-      .mapMaterializedValue(x => x match {
-        case (a,b) => a.flatMap(_ => b.map(TotalRows.apply))
-      })
+      .scan(Schema())(_ + _)
 
   private def docToPaths(
       doc: BsonDocument,

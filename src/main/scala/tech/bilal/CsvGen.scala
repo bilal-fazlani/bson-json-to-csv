@@ -9,22 +9,20 @@ import akka.util.ByteString
 import org.mongodb.scala.bson.*
 import tech.bilal.Extensions.*
 import tech.bilal.StringEncoder.*
-
 import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) extends StreamFlows {
 
-  import printer.println
-  import printer.print
+  import printer.*
   
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
     println("-" * 60)
     println("Generating schema...")
 
     val (dd,ee) = schema.generate(source)
-      .via(viaIndex(x => print(s"\rfound ${x._2 + 1} unique fields...")))
+      .alsoTo(Sink.foreach(x => print(s"\rfound ${x.paths.size + 1} unique fields in ${x.rows} records... ")))
       .recover {
         case NonFatal(_: FramingException) =>
           println("Invalid JSON encountered")
@@ -35,11 +33,11 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
           system.terminate().block()
           sys.exit(1)
       }
-      .toMat(Sink.collection)(Keep.both)
+      .toMat(Sink.last)(Keep.both)
       .run
 
-    val (totalRows, params) = (dd.flatMap(d => ee.map(e => (d,e.toList)))).block()
-
+    val (params, totalRows) = (dd.flatMap(d => ee.map(e => (e.paths.toList, e.rows)))).block()
+    
     println("DONE")
     println("-" * 60)
     println("Generating csv...")
@@ -51,7 +49,7 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem) ext
         .via(jsonFrame)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
-        .via(viaIndex(x => print(s"\rprocessed ${x._2 + 1}/${totalRows.toInt} rows...")))
+        .via(viaIndex(x => print(s"\rprocessed ${(((x._2 + 1D) / totalRows.toDouble) * 100).toInt}%... ")))
 
     val header: Source[CSVRow, NotUsed] =
       Source.single(CSVRow(params.map(_.toString)))

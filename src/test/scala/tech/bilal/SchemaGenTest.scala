@@ -44,7 +44,7 @@ class SchemaGenTest extends CustomFixtures {
     ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
 
     val expected: Seq[String] = Seq(
       ".id",
@@ -107,7 +107,7 @@ class SchemaGenTest extends CustomFixtures {
     //   "complex-matrix": [[{"id":1},{"id":2}], [{"id":3},{"id":4}]],
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
 
     val expected: Seq[String] = Seq(
       ".id",
@@ -146,7 +146,7 @@ class SchemaGenTest extends CustomFixtures {
     ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
 
     val expected: Seq[String] = Seq(
       ".simple-matrix[0][0]",
@@ -196,7 +196,7 @@ class SchemaGenTest extends CustomFixtures {
     ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.collection).block().toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
 
     val expected: Seq[String] = Seq(
       ".person.name",
