@@ -11,8 +11,8 @@ import org.mongodb.scala.bson.*
 import scopt.OParser
 import tech.bilal.Extensions.*
 import tech.bilal.StringEncoder.*
-
 import java.io.File
+import org.bson.json.JsonParseException
 import java.nio.file.{Path, StandardOpenOption}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -21,8 +21,13 @@ import scala.util.control.NonFatal
 case class CLIOptions(
     inputFile: File = new File("."),
     outputFile: Option[File] = None,
-    noColor: Boolean = false
-)
+    noColor: Boolean = false,
+    overrideFile: Boolean = false
+){
+  val outputFilePath:Path = Path.of(outputFile
+        .map(_.getPath)
+        .getOrElse(inputFile.getPath + ".csv"))
+}
 
 object Main extends StreamFlows {
 
@@ -44,18 +49,24 @@ object Main extends StreamFlows {
           .action((f, c) => c.copy(inputFile = f)),
         arg[Option[File]]("output-file")
           .valueName("<file>")
-          .text(
-            "Path for output csv file. If a file exits, it will be overridden. " +
-              "If no value is provided, a new file with same path + name is " +
-              "created with '.csv' extension"
-          )
+          .text("Path for output csv file. Default: <input-file>.csv")
           .optional()
-          .action((o, c) => c.copy(outputFile = o)),
+          .action((o, c) => c.copy(outputFile = o)),  
+        opt[Unit]("overwrite")
+          .text("delete and create a new new outfile if one already exists")
+          .optional()
+          .action((o, c) => c.copy(overrideFile = true)),
         opt[Unit]("no-color")
-          .text("does not use colors for output text")
+          .text("do not use colors for output text")
           .optional()
           .action((o, c) => c.copy(noColor = true)),
-        help("help").text("prints this usage text")
+        help("help").text("print help text"),
+        checkConfig{
+          case x@CLIOptions(_, _, _, false) => 
+            if x.outputFilePath.toFile.exists then failure(s"file ${x.outputFilePath.toString} already exists")
+            else success
+          case _ => success
+        }
       )
     }
 
@@ -78,16 +89,6 @@ object Main extends StreamFlows {
         val title = "Generating schema".bold
         print(s"\r$title: found $columns in $rows ")
       })
-      .recover {
-        case NonFatal(_: FramingException) =>
-          println("Invalid JSON encountered")
-          system.terminate().block()
-          sys.exit(1)
-        case NonFatal(err) =>
-          err.printStackTrace()
-          system.terminate().block()
-          sys.exit(1)
-      }
       .toMat(Sink.last)(Keep.both)
       .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
       .run
@@ -95,28 +96,27 @@ object Main extends StreamFlows {
         println("DONE".green.bold)
         val csvGen = new CsvGen(schema, Printer.console)
         val stream = csvGen.generateCsv(file(options.inputFile.getPath))
-        val fileName = options.outputFile
-              .map(_.getPath)
-              .getOrElse(options.inputFile.getPath + ".csv")
         stream
           .via(byteString)
-          .recover {
-            case NonFatal(err) =>
-              err.printStackTrace()
-              system.terminate().block()
-              sys.exit(1)
-          }
-          .toMat(fileSink(fileName))(Keep.both)
+          .toMat(fileSink(options.outputFilePath.toString, options.overrideFile))(Keep.both)
           .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
           .run()
       }.onComplete {
         case Success(_) => 
           println("DONE".green.bold)
           system.terminate().block()
+        case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
+          println("FAILED".red.bold)
+          println("Invalid JSON encountered")
+          sys.exit(1)
+        case Failure(err) if err.getCause.isInstanceOf[JsonParseException] =>
+          println("FAILED".red.bold)
+          println("Invalid JSON encountered")
+          sys.exit(1)
         case Failure(err) => 
           println("FAILED".red.bold)
           err.printStackTrace
-          system.terminate().block()
+          sys.exit(1)
       }
   }
 }

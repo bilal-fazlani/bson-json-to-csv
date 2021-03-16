@@ -31,10 +31,10 @@ trait StreamFlows {
   val byteString: Flow[CSVRow, ByteString, NotUsed] =
     Flow.fromFunction[CSVRow, ByteString](x => ByteString.apply(x.toString))
 
-  def fileSink(path:String) = FileIO.toPath(
+  def fileSink(path:String, overwrite:Boolean) = FileIO.toPath(
           Path.of(path),
           Set(
-            StandardOpenOption.CREATE,
+            if overwrite then StandardOpenOption.CREATE else StandardOpenOption.CREATE_NEW,
             StandardOpenOption.WRITE,
             StandardOpenOption.TRUNCATE_EXISTING
           ),
