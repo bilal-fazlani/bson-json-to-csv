@@ -21,7 +21,14 @@ class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system:
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
 
     val Schema(paths, totalRows) = schema.generate(source)
-      .alsoTo(Sink.foreach(x => print(s"\rGenerating schema: found ${x.paths.size + 1} unique fields in ${x.rows} records ")))
+      .alsoTo(Sink.foreach{x => 
+        val columns = s"${(x.paths.size + 1)} unique fields"
+        val columnsC = if noColor then columns else columns.yellow
+        val rows = s"${x.rows} records"
+        val rowsC = if noColor then columns else rows.yellow
+        val title = if noColor then "Generating schema" else "Generating schema".bold
+        print(s"\r$title: found $columnsC in $rowsC ")
+      })
       .recover {
         case NonFatal(_: FramingException) =>
           println("Invalid JSON encountered")
@@ -52,9 +59,9 @@ class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system:
           val pValue = (((x._2 + 1D) / totalRows.toDouble) * 100).toInt
           val percentage = s"$pValue%"
           val pText = if(noColor) percentage
-            else if(pValue == 100) percentage.green
             else percentage.yellow
-          print(s"\rGenerating csv: $pText ")
+          val title = if noColor then "Generating csv" else "Generating csv".bold
+          print(s"\r$title: $pText ")
         })
 
     val header: Source[CSVRow, NotUsed] =
