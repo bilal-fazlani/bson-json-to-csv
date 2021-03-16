@@ -73,7 +73,7 @@ object Main extends StreamFlows {
 
     val schema = schemaGen.generate(file(options.inputFile.getPath))
       .alsoTo(Sink.foreach{ (x:Schema) => 
-        val columns = (s"${(x.paths.size + 1)} unique fields").yellow
+        val columns = (s"${(x.paths.size)} unique fields").yellow
         val rows = (s"${x.rows} records").yellow
         val title = "Generating schema".bold
         print(s"\r$title: found $columns in $rows ")

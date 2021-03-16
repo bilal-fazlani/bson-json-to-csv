@@ -23,7 +23,6 @@ jobs:
       run: |
         sbtn publishLocal
         cs bootstrap -o bson-json-to-csv --standalone tech.bilal:jsontocsv_3.0.0-RC1:0.1.0-SNAPSHOT -f -r jitpack
-        chmod +x bson-json-to-csv
     - name: publish          
       uses: softprops/action-gh-release@v1
       with:
