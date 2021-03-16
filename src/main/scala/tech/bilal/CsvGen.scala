@@ -14,20 +14,18 @@ import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system: ActorSystem) extends StreamFlows {
+class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem, colorContext: ColorContext) extends StreamFlows {
 
   import printer.*
   
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
 
     val Schema(paths, totalRows) = schema.generate(source)
-      .alsoTo(Sink.foreach{x => 
-        val columns = s"${(x.paths.size + 1)} unique fields"
-        val columnsC = if noColor then columns else columns.yellow
-        val rows = s"${x.rows} records"
-        val rowsC = if noColor then columns else rows.yellow
-        val title = if noColor then "Generating schema" else "Generating schema".bold
-        print(s"\r$title: found $columnsC in $rowsC ")
+      .alsoTo(Sink.foreach{ (x:Schema) => 
+        val columns = (s"${(x.paths.size + 1)} unique fields").yellow
+        val rows = (s"${x.rows} records").yellow
+        val title = "Generating schema".bold
+        print(s"\r$title: found $columns in $rows ")
       })
       .recover {
         case NonFatal(_: FramingException) =>
@@ -46,7 +44,7 @@ class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system:
 
     val params = paths.toList 
     
-    println(if noColor then "DONE" else "DONE".green.bold)
+    println("DONE".green.bold)
 
     val contents: Source[CSVRow, Future[IOResult]] =
       source
@@ -57,11 +55,9 @@ class CsvGen(schema: SchemaGen, printer: Printer, noColor:Boolean)(using system:
         .map(x => getCsvRow(x, params))
         .via(viaIndex{x => 
           val pValue = (((x._2 + 1D) / totalRows.toDouble) * 100).toInt
-          val percentage = s"$pValue%"
-          val pText = if(noColor) percentage
-            else percentage.yellow
-          val title = if noColor then "Generating csv" else "Generating csv".bold
-          print(s"\r$title: $pText ")
+          val percentage = s"$pValue%".yellow
+          val title = "Generating csv".bold
+          print(s"\r$title: $percentage ")
         })
 
     val header: Source[CSVRow, NotUsed] =

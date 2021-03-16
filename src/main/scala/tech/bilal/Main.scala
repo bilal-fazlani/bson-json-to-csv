@@ -67,9 +67,10 @@ object Main extends StreamFlows {
   }
 
   def run(options: CLIOptions): Unit = {
+    given ColorContext = ColorContext(enable = !options.noColor)
     given system: ActorSystem = ActorSystem("main")
 
-    val csvGen = new CsvGen(new SchemaGen, Printer.console, options.noColor)
+    val csvGen = new CsvGen(new SchemaGen, Printer.console)
     val stream = csvGen.generateCsv(file(options.inputFile.getPath))
     val fileName = options.outputFile
               .map(_.getPath)
