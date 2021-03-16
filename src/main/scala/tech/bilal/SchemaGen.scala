@@ -15,9 +15,9 @@ case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
     infix def +(morePaths: Set[JsonPath]): Schema = Schema(paths ++ morePaths, rows + 1)
 }
 
-class SchemaGen(implicit mat: Materializer, ec:ExecutionContext) extends StreamFlows {
+class SchemaGen extends StreamFlows {
 
-  def generate(source: Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
+  def generate(source: => Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
     source
       .via(lineMaker)
       .dropWhile(!_.utf8String.startsWith("{"))

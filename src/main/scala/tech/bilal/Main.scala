@@ -69,33 +69,54 @@ object Main extends StreamFlows {
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
     given system: ActorSystem = ActorSystem("main")
+    val schemaGen = new SchemaGen
 
-    val csvGen = new CsvGen(new SchemaGen, Printer.console)
-    val stream = csvGen.generateCsv(file(options.inputFile.getPath))
-    val fileName = options.outputFile
-              .map(_.getPath)
-              .getOrElse(options.inputFile.getPath + ".csv")
-
-    val f = stream
-      .via(byteString)
+    val schema = schemaGen.generate(file(options.inputFile.getPath))
+      .alsoTo(Sink.foreach{ (x:Schema) => 
+        val columns = (s"${(x.paths.size + 1)} unique fields").yellow
+        val rows = (s"${x.rows} records").yellow
+        val title = "Generating schema".bold
+        print(s"\r$title: found $columns in $rows ")
+      })
       .recover {
+        case NonFatal(_: FramingException) =>
+          println("Invalid JSON encountered")
+          system.terminate().block()
+          sys.exit(1)
         case NonFatal(err) =>
           err.printStackTrace()
           system.terminate().block()
           sys.exit(1)
       }
-      .toMat(fileSink(fileName))(Keep.both)
-      .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
-      .run()
-
-    f.onComplete{
-      case Success(_) => 
-        println(if options.noColor then "DONE" else "DONE".green.bold)
-        system.terminate().block()
-      case Failure(err) => 
-        println(if options.noColor then "FAILED" else "FAILED".red.bold)
-        err.printStackTrace
-        system.terminate().block()
-    }
+      .toMat(Sink.last)(Keep.both)
+      .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
+      .run
+      .flatMap { schema => 
+        println("DONE".green.bold)
+        val csvGen = new CsvGen(schema, Printer.console)
+        val stream = csvGen.generateCsv(file(options.inputFile.getPath))
+        val fileName = options.outputFile
+              .map(_.getPath)
+              .getOrElse(options.inputFile.getPath + ".csv")
+        stream
+          .via(byteString)
+          .recover {
+            case NonFatal(err) =>
+              err.printStackTrace()
+              system.terminate().block()
+              sys.exit(1)
+          }
+          .toMat(fileSink(fileName))(Keep.both)
+          .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
+          .run()
+      }.onComplete {
+        case Success(_) => 
+          println("DONE".green.bold)
+          system.terminate().block()
+        case Failure(err) => 
+          println("FAILED".red.bold)
+          err.printStackTrace
+          system.terminate().block()
+      }
   }
 }

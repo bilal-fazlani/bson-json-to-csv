@@ -14,38 +14,12 @@ import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem, colorContext: ColorContext) extends StreamFlows {
+class CsvGen(schema: Schema, printer: Printer)(using ColorContext) extends StreamFlows {
 
   import printer.*
   
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
-
-    val Schema(paths, totalRows) = schema.generate(source)
-      .alsoTo(Sink.foreach{ (x:Schema) => 
-        val columns = (s"${(x.paths.size + 1)} unique fields").yellow
-        val rows = (s"${x.rows} records").yellow
-        val title = "Generating schema".bold
-        print(s"\r$title: found $columns in $rows ")
-      })
-      .recover {
-        case NonFatal(_: FramingException) =>
-          println("Invalid JSON encountered")
-          system.terminate().block()
-          sys.exit(1)
-        case NonFatal(err) =>
-          err.printStackTrace()
-          system.terminate().block()
-          sys.exit(1)
-      }
-      .toMat(Sink.last)(Keep.both)
-      .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
-      .run
-      .block()
-
-    val params = paths.toList 
-    
-    println("DONE".green.bold)
-
+    val params = schema.paths.toList
     val contents: Source[CSVRow, Future[IOResult]] =
       source
         .via(lineMaker)
@@ -54,7 +28,7 @@ class CsvGen(schema: SchemaGen, printer: Printer)(using system: ActorSystem, col
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
         .via(viaIndex{x => 
-          val pValue = (((x._2 + 1D) / totalRows.toDouble) * 100).toInt
+          val pValue = (((x._2 + 1D) / schema.rows.toDouble) * 100).toInt
           val percentage = s"$pValue%".yellow
           val title = "Generating csv".bold
           print(s"\r$title: $percentage ")

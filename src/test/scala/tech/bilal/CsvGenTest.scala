@@ -40,35 +40,41 @@ class CsvGenTest extends CustomFixtures {
     given ActorSystem = system
     given ExecutionContext = system.dispatcher
     given ColorContext = ColorContext(false)
-    val csvGen = new CsvGen(new SchemaGen(), fakePrinter)
+    val schemaGen = new SchemaGen
     val source = Source.single(ByteString(json)).mapMaterializedValue(_ => Future.successful(IOResult(0)))
-    val obtained: String = csvGen.generateCsv(source)
-      .runWith(Sink.seq).block()
-      .map(_.toString)
-      .mkString("")
+    schemaGen.generate(source)
+    .runWith(Sink.last)
+    .map { schema => 
+      val csvGen = new CsvGen(schema, fakePrinter)
+      csvGen.generateCsv(source)
+        .runWith(Sink.seq)
+        .map(_.map(_.toString))
+        .map(_.mkString)
+        .map { obtained => 
+          given CSVFormat = new DefaultCSVFormat{}
+          val reader:Reader = new StringReader(obtained)
+          val csv: List[Map[String, String]] = CSVReader.open(reader).allWithHeaders()
+          
+          assertEquals(csv(0), Map(
+            ".name" -> "john",
+            ".location.city" -> "mumbai",
+            ".location.country" -> "india",
+            ".location" -> "",
+            ".tags[0]" -> "",
+            ".tags[1]" -> "",
+            ".tags[2]" -> ""
+          ))
 
-    given CSVFormat = new DefaultCSVFormat{}
-    val reader:Reader = new StringReader(obtained)
-    val csv: List[Map[String, String]] = CSVReader.open(reader).allWithHeaders()
-    
-    assertEquals(csv(0), Map(
-      ".name" -> "john",
-      ".location.city" -> "mumbai",
-      ".location.country" -> "india",
-      ".location" -> "",
-      ".tags[0]" -> "",
-      ".tags[1]" -> "",
-      ".tags[2]" -> ""
-    ))
-
-    assertEquals(csv(1), Map(
-      ".name" -> "jane",
-      ".location.city" -> "",
-      ".location.country" -> "",
-      ".location" -> "delhi",
-      ".tags[0]" -> "scala",
-      ".tags[1]" -> "java",
-      ".tags[2]" -> "big data"
-    ))
+          assertEquals(csv(1), Map(
+            ".name" -> "jane",
+            ".location.city" -> "",
+            ".location.country" -> "",
+            ".location" -> "delhi",
+            ".tags[0]" -> "scala",
+            ".tags[1]" -> "java",
+            ".tags[2]" -> "big data"
+          ))
+        }
+    }
   }
 }
