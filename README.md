@@ -16,7 +16,7 @@ Creates a flat csv files out of a nested bson/json file
 
 ![help](/images/usage.png)
 
-Works with streaming of objects. For example,
+Works with stream of json/bson objects. For example,
 
 ```json
 {
@@ -33,7 +33,7 @@ Works with streaming of objects. For example,
 }
 ```
 
-each top level object results into one csv row. The above file will generate a csv with a header and two csv records
+Each top level object results into one csv row. The above file will generate a csv with a header and two csv records
 
 ```csv
 .name,.location.city,.location.country,.tags[1],.location,.tags[0],.tags[2]
