@@ -217,4 +217,28 @@ class SchemaGenTest extends CustomFixtures {
       expected.sorted
     )
   }
+
+  actorSystemFixture.test("empty records") { actorSystem =>
+    implicit val mat: Materializer = Materializer(actorSystem)
+    given ExecutionContext = actorSystem.dispatcher
+    val schemaGen = new SchemaGen
+
+    val singleSource = Source.single(
+      ByteString(
+        """
+          |{
+          |}
+          |{
+          |}
+          |""".stripMargin
+      )
+    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
+
+    val schema: Schema =
+      schemaGen.generate(singleSource).runWith(Sink.last).block()
+
+    val expected: Schema = Schema(Set.empty, 2)
+
+    assertEquals(schema,expected)
+  }
 }

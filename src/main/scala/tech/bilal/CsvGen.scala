@@ -14,6 +14,7 @@ import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+
 class CsvGen(schema: Schema, printer: Printer)(using ColorContext) extends StreamFlows {
 
   import printer.*
@@ -50,21 +51,18 @@ class CsvGen(schema: Schema, printer: Printer)(using ColorContext) extends Strea
     
   private def getStringRepr(bsonValueMaybe: Option[BsonValue]): String =
     (bsonValueMaybe match {
-      case Some(null) | None => ""
-      case Some(bsonValue) =>
-        bsonValue match {
-          case x: BsonString     => x.encodeToString
-          case x: BsonBoolean    => x.encodeToString
-          case x: BsonDateTime   => x.encodeToString
-          case x: BsonObjectId   => x.encodeToString
-          case x: BsonInt32      => x.encodeToString
-          case x: BsonInt64      => x.encodeToString
-          case x: BsonDouble     => x.encodeToString
-          case x: BsonDecimal128 => x.encodeToString
-          case x: BsonTimestamp  => x.encodeToString
-          case _: BsonNull       => ""
-        }
+      case Some(null) | None       => ""
+      case Some(x: BsonString)     => x.encodeToString
+      case Some(x: BsonBoolean)    => x.encodeToString
+      case Some(x: BsonDateTime)   => x.encodeToString
+      case Some(x: BsonObjectId)   => x.encodeToString
+      case Some(x: BsonInt32)      => x.encodeToString
+      case Some(x: BsonInt64)      => x.encodeToString
+      case Some(x: BsonDouble)     => x.encodeToString
+      case Some(x: BsonDecimal128) => x.encodeToString
+      case Some(x: BsonTimestamp)  => x.encodeToString
+      case Some(_: BsonNull)       => ""
     })
-      .replaceAll(",", "")
-      .replaceAll("\n", "")
+    .replaceAll(",", "")
+    .replaceAll("\n", "")
 }
