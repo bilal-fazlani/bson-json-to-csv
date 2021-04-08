@@ -9,7 +9,6 @@ import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
 import org.mongodb.scala.bson.*
 import scopt.OParser
-import tech.bilal.Extensions.*
 import tech.bilal.StringEncoder.*
 import java.io.File
 import org.bson.json.JsonParseException
@@ -84,8 +83,8 @@ object Main extends StreamFlows {
 
     val schema = schemaGen.generate(file(options.inputFile.getPath))
       .alsoTo(Sink.foreach{ (x:Schema) => 
-        val columns = (s"${(x.paths.size)} unique fields").yellow
-        val rows = (s"${x.rows} records").yellow
+        val columns = s"${x.paths.size} unique fields".yellow
+        val rows = s"${x.rows} records".yellow
         val title = "Generating schema".bold
         print(s"\r$title: found $columns in $rows ")
       })
@@ -93,7 +92,9 @@ object Main extends StreamFlows {
       .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
       .run
       .flatMap { schema => 
-        println("DONE".green.bold)
+        if(schema.rows == 0) throw Error.NoRows
+        else if(schema.paths.size == 0) throw Error.NoFields
+        else println("DONE".green.bold)
         val csvGen = new CsvGen(schema, Printer.console)
         val stream = csvGen.generateCsv(file(options.inputFile.getPath))
         stream
@@ -104,7 +105,15 @@ object Main extends StreamFlows {
       }.onComplete {
         case Success(_) => 
           println("DONE".green.bold)
-          system.terminate().block()
+          system.terminate().block
+        case Failure(Error.NoRows) =>
+          println("FAILED".red.bold)
+          println("No json records found in file".red)
+          sys.exit(1)
+        case Failure(Error.NoFields) => 
+          println("FAILED".red.bold)
+          println("No fields found in any records".red)
+          sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
@@ -119,4 +128,8 @@ object Main extends StreamFlows {
           sys.exit(1)
       }
   }
+}
+
+enum Error extends RuntimeException{
+  case NoRows, NoFields
 }

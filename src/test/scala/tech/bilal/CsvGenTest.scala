@@ -8,7 +8,6 @@ import com.github.tototoshi.csv.{CSVFormat, CSVReader, DefaultCSVFormat}
 import munit.FunSuite
 import org.junit.Assert
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
-import tech.bilal.Extensions.*
 import tech.bilal.Node
 import tech.bilal.CustomFixtures
 import com.bilalfazlani.scala.rainbow.ColorContext
@@ -17,7 +16,7 @@ import java.io.{Reader, StringReader}
 import scala.concurrent.{Future, ExecutionContext}
 
 class CsvGenTest extends CustomFixtures {
-  private val json: String ="""
+  private val json: String = """
 {
     "name": "john",
     "location": {
@@ -35,46 +34,57 @@ class CsvGenTest extends CustomFixtures {
     def println(str: String): Unit = ()
     def print(str: String): Unit = ()
   }
-  
-  actorSystemFixture.test("can generate CSV"){ system =>
+
+  actorSystemFixture.test("can generate CSV") { system =>
     given ActorSystem = system
     given ExecutionContext = system.dispatcher
     given ColorContext = ColorContext(false)
     val schemaGen = new SchemaGen
-    val source = Source.single(ByteString(json)).mapMaterializedValue(_ => Future.successful(IOResult(0)))
-    schemaGen.generate(source)
-    .runWith(Sink.last)
-    .map { schema => 
-      val csvGen = new CsvGen(schema, fakePrinter)
-      csvGen.generateCsv(source)
-        .runWith(Sink.seq)
-        .map(_.map(_.toString))
-        .map(_.mkString)
-        .map { obtained => 
-          given CSVFormat = new DefaultCSVFormat{}
-          val reader:Reader = new StringReader(obtained)
-          val csv: List[Map[String, String]] = CSVReader.open(reader).allWithHeaders()
-          
-          assertEquals(csv(0), Map(
-            ".name" -> "john",
-            ".location.city" -> "mumbai",
-            ".location.country" -> "india",
-            ".location" -> "",
-            ".tags[0]" -> "",
-            ".tags[1]" -> "",
-            ".tags[2]" -> ""
-          ))
+    val source = Source
+      .single(ByteString(json))
+      .mapMaterializedValue(_ => Future.successful(IOResult(0)))
+    schemaGen
+      .generate(source)
+      .runWith(Sink.last)
+      .map { schema =>
+        val csvGen = new CsvGen(schema, fakePrinter)
+        csvGen
+          .generateCsv(source)
+          .runWith(Sink.seq)
+          .map(_.map(_.toString))
+          .map(_.mkString)
+          .map { obtained =>
+            given CSVFormat = new DefaultCSVFormat {}
+            val reader: Reader = new StringReader(obtained)
+            val csv: List[Map[String, String]] =
+              CSVReader.open(reader).allWithHeaders()
 
-          assertEquals(csv(1), Map(
-            ".name" -> "jane",
-            ".location.city" -> "",
-            ".location.country" -> "",
-            ".location" -> "delhi",
-            ".tags[0]" -> "scala",
-            ".tags[1]" -> "java",
-            ".tags[2]" -> "big data"
-          ))
-        }
-    }
+            assertEquals(
+              csv(0),
+              Map(
+                ".name" -> "john",
+                ".location.city" -> "mumbai",
+                ".location.country" -> "india",
+                ".location" -> "",
+                ".tags[0]" -> "",
+                ".tags[1]" -> "",
+                ".tags[2]" -> ""
+              )
+            )
+
+            assertEquals(
+              csv(1),
+              Map(
+                ".name" -> "jane",
+                ".location.city" -> "",
+                ".location.country" -> "",
+                ".location" -> "delhi",
+                ".tags[0]" -> "scala",
+                ".tags[1]" -> "java",
+                ".tags[2]" -> "big data"
+              )
+            )
+          }
+      }
   }
 }
