@@ -3,7 +3,6 @@ package tech.bilal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
-import tech.bilal.Extensions.*
 import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.IOResult
 
@@ -46,7 +45,7 @@ class SchemaGenTest extends CustomFixtures {
       .mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
 
     val expected: Seq[String] = Seq(
       ".id",
@@ -111,7 +110,7 @@ class SchemaGenTest extends CustomFixtures {
     //   "complex-matrix": [[{"id":1},{"id":2}], [{"id":3},{"id":4}]],
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
 
     val expected: Seq[String] = Seq(
       ".id",
@@ -152,7 +151,7 @@ class SchemaGenTest extends CustomFixtures {
       .mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
 
     val expected: Seq[String] = Seq(
       ".simple-matrix[0][0]",
@@ -204,7 +203,7 @@ class SchemaGenTest extends CustomFixtures {
       .mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.last).block().paths.toList
+      schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
 
     val expected: Seq[String] = Seq(
       ".person.name",
@@ -223,22 +222,24 @@ class SchemaGenTest extends CustomFixtures {
     given ExecutionContext = actorSystem.dispatcher
     val schemaGen = new SchemaGen
 
-    val singleSource = Source.single(
-      ByteString(
-        """
+    val singleSource = Source
+      .single(
+        ByteString(
+          """
           |{
           |}
           |{
           |}
           |""".stripMargin
+        )
       )
-    ).mapMaterializedValue(_ => Future.successful(IOResult(0)))
+      .mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
     val schema: Schema =
-      schemaGen.generate(singleSource).runWith(Sink.last).block()
+      schemaGen.generate(singleSource).runWith(Sink.last).block
 
     val expected: Schema = Schema(Set.empty, 2)
 
-    assertEquals(schema,expected)
+    assertEquals(schema, expected)
   }
 }

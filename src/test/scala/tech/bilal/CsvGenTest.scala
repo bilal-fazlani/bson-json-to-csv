@@ -8,7 +8,6 @@ import com.github.tototoshi.csv.{CSVFormat, CSVReader, DefaultCSVFormat}
 import munit.FunSuite
 import org.junit.Assert
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
-import tech.bilal.Extensions.*
 import tech.bilal.Node
 import tech.bilal.CustomFixtures
 import com.bilalfazlani.scala.rainbow.ColorContext
