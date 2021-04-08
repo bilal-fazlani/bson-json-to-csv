@@ -9,7 +9,6 @@ import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
 import org.mongodb.scala.bson.*
 import scopt.OParser
-import tech.bilal.Extensions.*
 import tech.bilal.StringEncoder.*
 import java.io.File
 import org.bson.json.JsonParseException
@@ -106,7 +105,7 @@ object Main extends StreamFlows {
       }.onComplete {
         case Success(_) => 
           println("DONE".green.bold)
-          system.terminate().block()
+          system.terminate().block
         case Failure(Error.NoRows) =>
           println("FAILED".red.bold)
           println("No json records found in file".red)

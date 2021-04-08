@@ -1,5 +1,6 @@
 package tech.bilal
 
+import tech.bilal.CSVRow
 import java.nio.file.Path
 import java.nio.file.{Path, StandardOpenOption}
 import akka.NotUsed
