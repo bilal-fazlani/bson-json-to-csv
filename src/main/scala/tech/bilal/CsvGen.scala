@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.util.ByteString
 import org.mongodb.scala.bson.*
-import tech.bilal.Extensions.*
+import tech.bilal.*
 import tech.bilal.StringEncoder.*
 import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
