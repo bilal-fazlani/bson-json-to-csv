@@ -8,22 +8,9 @@ import akka.util.ByteString
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class JsonFraming(fileTypeFinder: FileTypeFinder)(using ExecutionContext) {
-  def flow(source: => Source[ByteString, Future[IOResult]]): Source[String, Future[IOResult]] = {
-    Source.futureSource(
-      fileTypeFinder.find(source).map(fileType => framed(source, fileType))
-    ).mapMaterializedValue(_.flatten)
-  }
-
-  private val lineMaker: Flow[ByteString, ByteString, NotUsed] =
-    Framing.delimiter(
-      ByteString("\n"),
-      Int.MaxValue,
-      allowTruncation = true
-    )
-
-  private def framed(source: => Source[ByteString, Future[IOResult]], ft: FileType): Source[String, Future[IOResult]] = {
-    ft match {
+class JsonFraming(fileType: FileType)(using ExecutionContext) {
+  def frame(source: => Source[ByteString, Future[IOResult]]): Source[String, Future[IOResult]] = {
+    fileType match {
       case FileType.Array =>
         source
           .via(lineMaker)
@@ -38,4 +25,11 @@ class JsonFraming(fileTypeFinder: FileTypeFinder)(using ExecutionContext) {
           .map(_.utf8String)
     }
   }
+
+  private val lineMaker: Flow[ByteString, ByteString, NotUsed] =
+    Framing.delimiter(
+      ByteString("\n"),
+      Int.MaxValue,
+      allowTruncation = true
+    )
 }

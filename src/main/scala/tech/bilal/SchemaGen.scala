@@ -18,7 +18,7 @@ case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
 class SchemaGen(jsonFraming: JsonFraming) extends StreamFlows {
 
   def generate(source: => Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
-    jsonFraming.flow(source)
+    jsonFraming.frame(source)
       .via(bsonConvert)
       .map(docToPaths(_, None))
       .scan(Schema())(_ + _)

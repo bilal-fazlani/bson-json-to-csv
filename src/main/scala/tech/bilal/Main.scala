@@ -82,31 +82,36 @@ object Main extends StreamFlows {
     given system: ActorSystem = ActorSystem("main")
     import system.dispatcher
     val fileTypeFinder = new FileTypeFinder
-    val jsonFraming = new JsonFraming(fileTypeFinder)
-    val schemaGen = new SchemaGen(jsonFraming)
+    print("Detecting file type: ".bold)
 
-    val schema = schemaGen.generate(file(options.inputFile.getPath))
-      .alsoTo(Sink.foreach{ (x:Schema) => 
-        val columns = s"${x.paths.size} unique fields".yellow
-        val rows = s"${x.rows} records".yellow
-        val title = "Generating schema".bold
-        print(s"\r$title: found $columns in $rows ")
-      })
-      .toMat(Sink.last)(Keep.both)
-      .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
-      .run
-      .flatMap { schema => 
-        if(schema.rows == 0) throw Error.NoRows
-        else if(schema.paths.size == 0) throw Error.NoFields
-        else println("DONE".green.bold)
-        val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
-        val stream = csvGen.generateCsv(file(options.inputFile.getPath))
-        stream
-          .via(byteString)
-          .toMat(fileSink(options.outputFilePath.toString, options.overrideFile))(Keep.both)
-          .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
-          .run()
-      }.onComplete {
+    fileTypeFinder.find(file(options.inputFile.getPath)).flatMap{fileType =>
+      println(fileType.toString.yellow)
+      val jsonFraming = new JsonFraming(fileType)
+      val schemaGen = new SchemaGen(jsonFraming)
+      schemaGen.generate(file(options.inputFile.getPath))
+        .alsoTo(Sink.foreach{ (x:Schema) =>
+          val columns = s"${x.paths.size} unique fields".yellow
+          val rows = s"${x.rows} records".yellow
+          val title = "Generating schema".bold
+          print(s"\r$title: found $columns in $rows ")
+        })
+        .toMat(Sink.last)(Keep.both)
+        .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
+        .run
+        .flatMap { schema =>
+          if(schema.rows == 0) throw Error.NoRows
+          else if(schema.paths.size == 0) throw Error.NoFields
+          else println("DONE".green.bold)
+          val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
+          val stream = csvGen.generateCsv(file(options.inputFile.getPath))
+          stream
+            .via(byteString)
+            .toMat(fileSink(options.outputFilePath.toString, options.overrideFile))(Keep.both)
+            .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
+            .run()
+        }
+    }
+    .onComplete {
         case Success(_) => 
           println("DONE".green.bold)
           system.terminate().block
@@ -119,7 +124,8 @@ object Main extends StreamFlows {
           println("No fields found in any records".red)
           sys.exit(1)
         case Failure(err) if err.isInstanceOf[UnknownFileTypeException] =>
-          println("FAILED: ".red.bold + "Invalid JSON encountered".red)
+          println("FAILED".red.bold)
+          println(err.getMessage.red)
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
           println("FAILED".red.bold)

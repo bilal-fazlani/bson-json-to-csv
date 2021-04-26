@@ -22,7 +22,7 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using C
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
     val params = schema.paths.toList
     val contents: Source[CSVRow, Future[IOResult]] =
-      jsonFraming.flow(source)
+      jsonFraming.frame(source)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
         .via(viaIndex{x => 
