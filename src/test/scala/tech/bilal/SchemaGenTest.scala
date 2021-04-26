@@ -10,7 +10,9 @@ class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("can generate schema") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     given ExecutionContext = actorSystem.dispatcher
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val singleSource: Source[ByteString, Future[IOResult]] = Source
       .single(
@@ -66,7 +68,9 @@ class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("array support") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     given ExecutionContext = actorSystem.dispatcher
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val singleSource = Source
       .single(
@@ -135,7 +139,9 @@ class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("matrix support") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     given ExecutionContext = actorSystem.dispatcher
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val singleSource = Source
       .single(
@@ -173,7 +179,9 @@ class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("conflicting data types") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     given ExecutionContext = actorSystem.dispatcher
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val singleSource = Source
       .single(
@@ -220,7 +228,9 @@ class SchemaGenTest extends CustomFixtures {
   actorSystemFixture.test("empty records") { actorSystem =>
     implicit val mat: Materializer = Materializer(actorSystem)
     given ExecutionContext = actorSystem.dispatcher
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val singleSource = Source
       .single(

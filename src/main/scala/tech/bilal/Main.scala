@@ -16,6 +16,7 @@ import java.nio.file.{Path, StandardOpenOption}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
+import FileTypeFinder.UnknownFileTypeException
 
 case class CLIOptions(
     inputFile: File = new File("."),
@@ -79,7 +80,10 @@ object Main extends StreamFlows {
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
     given system: ActorSystem = ActorSystem("main")
-    val schemaGen = new SchemaGen
+    import system.dispatcher
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
 
     val schema = schemaGen.generate(file(options.inputFile.getPath))
       .alsoTo(Sink.foreach{ (x:Schema) => 
@@ -95,7 +99,7 @@ object Main extends StreamFlows {
         if(schema.rows == 0) throw Error.NoRows
         else if(schema.paths.size == 0) throw Error.NoFields
         else println("DONE".green.bold)
-        val csvGen = new CsvGen(schema, Printer.console)
+        val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
         val stream = csvGen.generateCsv(file(options.inputFile.getPath))
         stream
           .via(byteString)
@@ -113,6 +117,9 @@ object Main extends StreamFlows {
         case Failure(Error.NoFields) => 
           println("FAILED".red.bold)
           println("No fields found in any records".red)
+          sys.exit(1)
+        case Failure(err) if err.isInstanceOf[UnknownFileTypeException] =>
+          println("FAILED: ".red.bold + "Invalid JSON encountered".red)
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
           println("FAILED".red.bold)

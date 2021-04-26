@@ -1,30 +1,19 @@
 package tech.bilal
 
-import tech.bilal.CSVRow
-import java.nio.file.Path
-import java.nio.file.{Path, StandardOpenOption}
 import akka.NotUsed
 import akka.stream.IOResult
+import akka.stream.alpakka.json.scaladsl.JsonReader
 import akka.stream.scaladsl.{FileIO, Flow, Framing, JsonFraming, Sink, Source}
 import akka.util.ByteString
 import org.mongodb.scala.bson.BsonDocument
+import tech.bilal.CSVRow
 
+import java.nio.file.{Path, StandardOpenOption}
 import scala.concurrent.Future
 
 trait StreamFlows {
   def file(path: String): Source[ByteString, Future[IOResult]] =
     FileIO.fromPath(Path.of(path))
-
-  val lineMaker: Flow[ByteString, ByteString, NotUsed] =
-    Framing.delimiter(
-      ByteString("\n"),
-      Int.MaxValue,
-      allowTruncation = true
-    )
-
-  val jsonFrame: Flow[ByteString, String, NotUsed] = JsonFraming
-    .objectScanner(Int.MaxValue)
-    .map(_.utf8String)
 
   val bsonConvert: Flow[String, BsonDocument, NotUsed] =
     Flow.fromFunction[String, BsonDocument](BsonDocument.apply)

@@ -15,17 +15,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class CsvGen(schema: Schema, printer: Printer)(using ColorContext) extends StreamFlows {
+class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using ColorContext) extends StreamFlows {
 
   import printer.*
   
   def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
     val params = schema.paths.toList
     val contents: Source[CSVRow, Future[IOResult]] =
-      source
-        .via(lineMaker)
-        .dropWhile(!_.utf8String.startsWith("{"))
-        .via(jsonFrame)
+      jsonFraming.flow(source)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
         .via(viaIndex{x => 

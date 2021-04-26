@@ -39,7 +39,9 @@ class CsvGenTest extends CustomFixtures {
     given ActorSystem = system
     given ExecutionContext = system.dispatcher
     given ColorContext = ColorContext(false)
-    val schemaGen = new SchemaGen
+    val fileTypeFinder = new FileTypeFinder
+    val jsonFraming = new JsonFraming(fileTypeFinder)
+    val schemaGen = new SchemaGen(jsonFraming)
     val source = Source
       .single(ByteString(json))
       .mapMaterializedValue(_ => Future.successful(IOResult(0)))
@@ -47,7 +49,7 @@ class CsvGenTest extends CustomFixtures {
       .generate(source)
       .runWith(Sink.last)
       .map { schema =>
-        val csvGen = new CsvGen(schema, fakePrinter)
+        val csvGen = new CsvGen(schema, fakePrinter, jsonFraming)
         csvGen
           .generateCsv(source)
           .runWith(Sink.seq)

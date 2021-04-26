@@ -4,12 +4,10 @@ version := "0.1.0-SNAPSHOT"
 
 organization := "tech.bilal"
 
-scalaVersion := "3.0.0-RC2"
+scalaVersion := "3.0.0-RC3"
 
 resolvers += Resolver.JCenterRepository
 resolvers += "jitpack" at "https://jitpack.io"
-
-testFrameworks += new TestFramework("munit.Framework")
 
 enablePlugins(NativeImagePlugin)
 

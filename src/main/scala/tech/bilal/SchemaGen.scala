@@ -15,13 +15,10 @@ case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
     infix def +(morePaths: Set[JsonPath]): Schema = Schema(paths ++ morePaths, rows + 1)
 }
 
-class SchemaGen extends StreamFlows {
+class SchemaGen(jsonFraming: JsonFraming) extends StreamFlows {
 
   def generate(source: => Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
-    source
-      .via(lineMaker)
-      .dropWhile(!_.utf8String.startsWith("{"))
-      .via(jsonFrame)
+    jsonFraming.flow(source)
       .via(bsonConvert)
       .map(docToPaths(_, None))
       .scan(Schema())(_ + _)
