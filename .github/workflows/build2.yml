@@ -25,3 +25,5 @@ jobs:
     - name: test
       run: |
         ls $JAVA_HOME
+        echo "----------"
+        ls $JAVA_HOME/bin
