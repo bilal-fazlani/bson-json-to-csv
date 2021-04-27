@@ -56,6 +56,7 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using C
       case Some(x: BsonInt32)      => x.encodeToString
       case Some(x: BsonInt64)      => x.encodeToString
       case Some(x: BsonDouble)     => x.encodeToString
+      case Some(x: BsonUndefined)  => x.encodeToString
       case Some(x: BsonDecimal128) => x.encodeToString
       case Some(x: BsonTimestamp)  => x.encodeToString
       case Some(_: BsonNull)       => ""

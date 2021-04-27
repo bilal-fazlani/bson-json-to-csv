@@ -16,6 +16,9 @@ object StringEncoder {
   given StringEncoder[BsonString] = new {
     override def encode(input: BsonString): String = input.getValue
   }
+  given StringEncoder[BsonUndefined] = new {
+    override def encode(input: BsonUndefined): String = "Undefined"
+  }
   given StringEncoder[BsonBoolean] = new {
     override def encode(input: BsonBoolean): String = input.getValue.toString
   }
