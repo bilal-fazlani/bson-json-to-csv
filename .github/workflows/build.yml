@@ -1,4 +1,4 @@
-name: Build2
+name: Build
 
 on:
   push:
@@ -23,11 +23,4 @@ jobs:
       with:
         jvm: graalvm-java11:21.0.0
     - name: test
-      run: |
-        cd $JAVA_HOME/bin
-        ls
-        ./gu install native-image
-        ls
-        echo $GITHUB_WORKSPACE
-        cd $GITHUB_WORKSPACE
-        sbt nativeImage
+      run: sbtn test
