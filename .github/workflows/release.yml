@@ -18,18 +18,25 @@ jobs:
       uses: laughedelic/coursier-setup@v1
       with:
         jvm: graalvm-java11:21.0.0
-    - name: install native image
+# --- need to find a way to generate bins for multiple os ----
+#    - name: install native image
+#      run: |
+#        cd $JAVA_HOME/bin
+#        ./gu install native-image
+#    - name: build native binary
+#      run: |
+#        cd $GITHUB_WORKSPACE
+#        sbt nativeImage
+# --- need to find a way to generate bins for multiple os ----
+    - name: build jvm binary
       run: |
-        cd $JAVA_HOME/bin
-        ./gu install native-image
-    - name: build native binary
-      run: |
-        cd $GITHUB_WORKSPACE
-        sbt nativeImage
+        sbtn publishLocal
+        cs bootstrap -o bson-json-to-csv --standalone tech.bilal:jsontocsv_3.0.0-RC3:0.1.0-SNAPSHOT -f -r jitpack
     - name: publish
       uses: softprops/action-gh-release@v1
       with:
-        files: bson-json-to-csv
+        files: |
+          bson-json-to-csv
         body_path: changelog/${{ github.event.release.tag_name }}.md
         tag_name: ${{ github.event.release.tag_name }}
       env:
