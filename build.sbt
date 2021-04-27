@@ -19,9 +19,9 @@ scalacOptions ++= Seq(
 
 //GRAAL NATIVE IMAGE
 nativeImageOptions ++= Seq("--initialize-at-build-time", "--no-fallback")
-nativeImageInstalled := false
+nativeImageInstalled := true
 nativeImageJvm := "graalvm-java11"
-nativeImageVersion := "21.0.0"
+nativeImageVersion := "21.1.0"
 nativeImageOutput := file(name.value)
 nativeImageAgentMerge := true
 nativeImageOptions ++= Seq(

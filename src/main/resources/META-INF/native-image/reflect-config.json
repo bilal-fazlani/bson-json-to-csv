@@ -217,12 +217,24 @@
   "name":"java.lang.Long"
 },
 {
+  "name":"java.lang.Object[]"
+},
+{
   "name":"java.lang.String",
   "fields":[{"name":"value", "allowUnsafeAccess":true}]
 },
 {
   "name":"java.lang.invoke.VarHandle",
   "methods":[{"name":"releaseFence","parameterTypes":[] }]
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.time.Instant"
 },
 {
   "name":"scala.Boolean"
@@ -239,5 +251,17 @@
 {
   "name":"sun.misc.Unsafe",
   "allDeclaredFields":true
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"tech.bilal.StringEncoder$",
+  "fields":[{"name":"0bitmap$1", "allowUnsafeAccess":true}]
 }
 ]
