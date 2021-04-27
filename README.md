@@ -33,7 +33,8 @@ Works with stream of json/bson objects. For example,
 }
 ```
 
-Each top level object results into one csv row. The above file will generate a csv with a header and two csv records
+Each top level object results into an individual csv row.
+The above file will generate a csv with a header and two csv records
 
 ```csv
 .name,.location.city,.location.country,.tags[1],.location,.tags[0],.tags[2]
@@ -41,9 +42,29 @@ john,mumbai,india,,,,
 jane,,,java,delhi,scala,big data
 ```
 
+Version 1.4.0 also adds supports for top level single large array.
+All first level items in the array result into an individual csv row.
+
+Example:
+
+```json
+[{
+  "name": "john",
+  "location": {
+    "city": "mumbai",
+    "country": "india"
+  }
+},
+{
+  "name": "jane",
+  "location": "delhi",
+  "tags": ["scala", "java", "big data"]
+}]
+```
+
+This will result into same csv as above
 
 The headers are json-paths of corresponding json fields
-
 
 | .name | .location.city | .location.country | .tags[1] | .location | .tags[0] | .tags[2] |
 |-------|----------------|-------------------|----------|-----------|----------|----------|
