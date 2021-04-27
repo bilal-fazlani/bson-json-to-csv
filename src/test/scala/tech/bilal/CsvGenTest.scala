@@ -51,7 +51,7 @@ class CsvGenTest extends CustomFixtures {
   }
 
   def test(data: String, name:String) =
-    actorSystemFixture.test(s"can generate CSV for $name") { system =>
+    actorSystemFixture.test(s"can generate CSV: $name") { system =>
       given ActorSystem = system
       given ExecutionContext = system.dispatcher
       given ColorContext = ColorContext(false)
@@ -105,6 +105,6 @@ class CsvGenTest extends CustomFixtures {
         }
     }
 
-  test(streamingJson, "streaming json")
-  test(jsonArray, "array json")
+  test(streamingJson, "stream")
+  test(jsonArray, "array")
 }
