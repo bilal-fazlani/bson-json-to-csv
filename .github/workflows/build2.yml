@@ -24,6 +24,5 @@ jobs:
         jvm: graalvm-java11:21.0.0
     - name: test
       run: |
-        ls $JAVA_HOME
-        echo "----------"
-        ls $JAVA_HOME/bin
+        cd $JAVA_HOME/bin
+        ./gu install native-image
