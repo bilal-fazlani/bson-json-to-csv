@@ -13,17 +13,14 @@ jobs:
     - name: checkout
       uses: actions/checkout@v2
     - name: cache
-      uses: coursier/cache-action@v5      
+      uses: coursier/cache-action@v6
     - name: coursier-setup
       uses: laughedelic/coursier-setup@v1
       with:
-        jvm: adopt:11
-        apps: sbtn
+        jvm: graalvm-java11:21.0.0
     - name: build
-      run: |
-        sbtn publishLocal
-        cs bootstrap -o bson-json-to-csv --standalone tech.bilal:jsontocsv_3.0.0-RC3:0.1.0-SNAPSHOT -f -r jitpack
-    - name: publish          
+      run: sbt nativeImage
+    - name: publish
       uses: softprops/action-gh-release@v1
       with:
         files: bson-json-to-csv

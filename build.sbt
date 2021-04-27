@@ -1,4 +1,4 @@
-name := "jsontocsv"
+name := "bson-json-to-csv"
 
 version := "0.1.0-SNAPSHOT"
 
@@ -21,7 +21,7 @@ scalacOptions ++= Seq(
 nativeImageOptions ++= Seq("--initialize-at-build-time", "--no-fallback")
 nativeImageInstalled := true
 nativeImageJvm := "graalvm-java11"
-nativeImageVersion := "21.1.0"
+nativeImageVersion := "21.0.0"
 nativeImageOutput := file(name.value)
 nativeImageAgentMerge := true
 nativeImageOptions ++= Seq(
