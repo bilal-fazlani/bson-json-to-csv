@@ -26,3 +26,5 @@ jobs:
       run: |
         cd $JAVA_HOME/bin
         ./gu install native-image
+        ls
+        sbt nativeImage
