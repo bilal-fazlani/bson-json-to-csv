@@ -6,3 +6,5 @@ target
 .vscode
 .DS_Store
 bson-json-to-csv
+**.json
+**.csv

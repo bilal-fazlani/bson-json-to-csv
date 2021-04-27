@@ -39,7 +39,7 @@ class CsvGenTest extends CustomFixtures {
     given ActorSystem = system
     given ExecutionContext = system.dispatcher
     given ColorContext = ColorContext(false)
-    val jsonFraming = new JsonFraming(FileType.ObjectStream)
+    val jsonFraming = new JsonFraming
     val schemaGen = new SchemaGen(jsonFraming)
     val source = Source
       .single(ByteString(json))

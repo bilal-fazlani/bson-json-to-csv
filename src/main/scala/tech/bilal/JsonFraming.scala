@@ -1,35 +1,56 @@
 package tech.bilal
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.IOResult
 import akka.stream.alpakka.json.scaladsl.JsonReader
-import akka.stream.scaladsl.{Flow, Framing, JsonFraming, Source}
+import akka.stream.scaladsl.{Flow, Framing, JsonFraming, Keep, Sink, Source}
 import akka.util.ByteString
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.control.NonFatal
 
-class JsonFraming(fileType: FileType)(using ExecutionContext) {
+extension [Mat] (flow: Flow[ByteString, ByteString, Mat])
+  def dropUntil(separator: ByteString, inclusive:Boolean): Flow[ByteString,ByteString, Mat] =
+    separate(separator, inclusive).drop(1)
+
+  private def separate(separator: ByteString, inclusive:Boolean) =
+    flow
+      .statefulMapConcat(() => {
+        var total: ByteString = ByteString.emptyByteString
+        var last: ByteString = ByteString.emptyByteString
+        var inHeader = true
+        current => {
+          if (inHeader) {
+            val recent = last ++ current
+            val batchHasSeparator = recent.utf8String.contains(separator.utf8String)
+            total = total ++ current
+            if (!batchHasSeparator) {
+              last = current
+              List.empty[ByteString]
+            }
+            else {
+              last = current
+              inHeader = false
+              val totalUtf = total.utf8String
+              val sepIndex = totalUtf.indexOf(separator.utf8String)
+              val bodyBeginning = total.utf8String.substring(
+                sepIndex + (if inclusive then 0 else separator.utf8String.length),
+                totalUtf.length
+              )
+              List[ByteString](ByteString.fromString(total.utf8String.substring(0, sepIndex)), ByteString.fromString(bodyBeginning))
+            }
+          }
+          else
+            List(current)
+        }
+      })
+
+class JsonFraming {
   def frame(source: => Source[ByteString, Future[IOResult]]): Source[String, Future[IOResult]] = {
-    fileType match {
-      case FileType.Array =>
-        source
-          .via(lineMaker)
-          .dropWhile(!_.utf8String.startsWith("["))
-          .via(JsonReader.select("$[*]"))
-          .map(_.utf8String)
-      case FileType.ObjectStream =>
-        source
-          .via(lineMaker)
-          .dropWhile(!_.utf8String.startsWith("{"))
-          .via(akka.stream.scaladsl.JsonFraming.objectScanner(Int.MaxValue))
-          .map(_.utf8String)
-    }
+    source
+      .via(Flow[ByteString].dropUntil(ByteString.fromString("{"), true))
+      .via(akka.stream.scaladsl.JsonFraming.objectScanner(Int.MaxValue))
+      .map(_.utf8String)
   }
-
-  private val lineMaker: Flow[ByteString, ByteString, NotUsed] =
-    Framing.delimiter(
-      ByteString("\n"),
-      Int.MaxValue,
-      allowTruncation = true
-    )
 }

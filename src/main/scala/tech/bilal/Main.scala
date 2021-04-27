@@ -86,7 +86,7 @@ object Main extends StreamFlows {
 
     fileTypeFinder.find(file(options.inputFile.getPath)).flatMap{fileType =>
       println(fileType.toString.yellow)
-      val jsonFraming = new JsonFraming(fileType)
+      val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
       schemaGen.generate(file(options.inputFile.getPath))
         .alsoTo(Sink.foreach{ (x:Schema) =>
