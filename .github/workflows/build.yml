@@ -17,11 +17,11 @@ jobs:
     - name: checkout
       uses: actions/checkout@v2
     - name: cache
-      uses: coursier/cache-action@v5      
+      uses: coursier/cache-action@v6
     - name: coursier-setup
       uses: laughedelic/coursier-setup@v1
       with:
-        jvm: adopt:11
+        jvm: graalvm-java11:21.1.0
         apps: sbtn
     - name: test
       run: sbtn test
