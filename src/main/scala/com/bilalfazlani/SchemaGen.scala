@@ -1,15 +1,14 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.*
 import akka.util.ByteString
-import scala.concurrent.Future
 import akka.stream.IOResult
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
-import Node.*
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
+import com.bilalfazlani.Node.*
 
 case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
     infix def +(morePaths: Set[JsonPath]): Schema = Schema(paths ++ morePaths, rows + 1)

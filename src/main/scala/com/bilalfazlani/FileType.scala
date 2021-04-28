@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 enum FileType:
   case Array,ObjectStream

@@ -1,6 +1,6 @@
-package tech.bilal
+package com.bilalfazlani
 
-import com.bilalfazlani.scala.rainbow.*
+import com.bilalfazlani.rainbowcli.*
 import akka.NotUsed
 import scala.util.{Success, Failure}
 import akka.actor.ActorSystem
@@ -9,7 +9,7 @@ import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
 import org.mongodb.scala.bson.*
 import scopt.OParser
-import tech.bilal.StringEncoder.*
+import StringEncoder.*
 import java.io.File
 import org.bson.json.JsonParseException
 import java.nio.file.{Path, StandardOpenOption}

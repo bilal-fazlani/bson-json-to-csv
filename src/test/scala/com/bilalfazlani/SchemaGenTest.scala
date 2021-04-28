@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}

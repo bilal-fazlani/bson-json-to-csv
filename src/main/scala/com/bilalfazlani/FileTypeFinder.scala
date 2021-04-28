@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.stream.{IOResult, Materializer}
 import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}

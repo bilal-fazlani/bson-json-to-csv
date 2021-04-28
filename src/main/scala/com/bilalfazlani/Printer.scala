@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 trait Printer {
   def println(str: String): Unit

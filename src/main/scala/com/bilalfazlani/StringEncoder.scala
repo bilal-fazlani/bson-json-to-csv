@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import org.mongodb.scala.bson.*
 

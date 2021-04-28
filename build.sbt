@@ -2,7 +2,7 @@ name := "bson-json-to-csv"
 
 version := "0.1.0-SNAPSHOT"
 
-organization := "tech.bilal"
+organization := "com.bilal-fazlani"
 
 scalaVersion := "3.0.0-RC3"
 
@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
   Akka.jsonStreaming,
   Mongo.`mongo-scala-driver`,
   Libs.scopt,
-  Libs.`scala-rainbow`,
+  Libs.rainbowcli,
   Libs.`scala-csv` % Test,
   Libs.munit % Test
 )

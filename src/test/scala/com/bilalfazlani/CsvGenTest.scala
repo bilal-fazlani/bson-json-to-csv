@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.actor.ActorSystem
 import akka.stream.IOResult
@@ -8,12 +8,10 @@ import com.github.tototoshi.csv.{CSVFormat, CSVReader, DefaultCSVFormat}
 import munit.FunSuite
 import org.junit.Assert
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
-import tech.bilal.Node
-import tech.bilal.CustomFixtures
-import com.bilalfazlani.scala.rainbow.ColorContext
+import com.bilalfazlani.rainbowcli.ColorContext
 
 import java.io.{Reader, StringReader}
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 class CsvGenTest extends CustomFixtures {
   private val streamingJson: String = """

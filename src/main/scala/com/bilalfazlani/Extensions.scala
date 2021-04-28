@@ -1,8 +1,8 @@
-package tech.bilal
+package com.bilalfazlani
 
 import org.bson.BsonInvalidOperationException
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
-import tech.bilal.Node.{Index, Name}
+import Node.{Index, Name}
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

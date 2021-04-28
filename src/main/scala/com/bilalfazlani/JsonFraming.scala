@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -6,7 +6,6 @@ import akka.stream.IOResult
 import akka.stream.alpakka.json.scaladsl.JsonReader
 import akka.stream.scaladsl.{Flow, Framing, JsonFraming, Keep, Sink, Source}
 import akka.util.ByteString
-
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 

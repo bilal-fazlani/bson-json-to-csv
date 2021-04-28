@@ -1,6 +1,6 @@
-package tech.bilal
+package com.bilalfazlani
 
-import com.bilalfazlani.scala.rainbow.*
+import com.bilalfazlani.rainbowcli.*
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.IOResult
@@ -8,12 +8,10 @@ import akka.stream.scaladsl.Framing.FramingException
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.util.ByteString
 import org.mongodb.scala.bson.*
-import tech.bilal.*
-import tech.bilal.StringEncoder.*
+import StringEncoder.*
 import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 
 class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using ColorContext) extends StreamFlows {
 

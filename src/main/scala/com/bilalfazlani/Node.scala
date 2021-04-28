@@ -1,7 +1,6 @@
-package tech.bilal
+package com.bilalfazlani
 
-import tech.bilal.Node.{Index, Name}
-
+import com.bilalfazlani.Node.*
 import scala.language.implicitConversions
 
 sealed trait Node {

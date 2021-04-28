@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 case class CSVRow(items: Seq[String]) {
   override def toString: String = items.mkString(",") + "\n"

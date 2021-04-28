@@ -1,8 +1,8 @@
-package tech.bilal
+package com.bilalfazlani
 
 import munit.FunSuite
 import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
-import tech.bilal.Node.*
+import Node.*
 
 class JsonPathTest extends FunSuite {
   private val json: String =

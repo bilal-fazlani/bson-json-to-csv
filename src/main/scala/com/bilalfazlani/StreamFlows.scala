@@ -1,4 +1,4 @@
-package tech.bilal
+package com.bilalfazlani
 
 import akka.NotUsed
 import akka.stream.IOResult
@@ -6,8 +6,7 @@ import akka.stream.alpakka.json.scaladsl.JsonReader
 import akka.stream.scaladsl.{FileIO, Flow, Framing, JsonFraming, Sink, Source}
 import akka.util.ByteString
 import org.mongodb.scala.bson.BsonDocument
-import tech.bilal.CSVRow
-
+import com.bilalfazlani.CSVRow
 import java.nio.file.{Path, StandardOpenOption}
 import scala.concurrent.Future
 

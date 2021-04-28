@@ -18,8 +18,8 @@ object Libs {
   )
   lazy val `scala-csv` = ("com.github.tototoshi" %% "scala-csv" % "1.3.7")
     .withCrossVersion(CrossVersion.for3Use2_13)
-  lazy val `scala-rainbow` =
-    "com.github.bilal-fazlani" % "scala-rainbow" % "1.0.2"
+  lazy val rainbowcli =
+    "com.github.bilal-fazlani" % "rainbowcli" % "2.0.0"
 }
 
 object Mongo {
