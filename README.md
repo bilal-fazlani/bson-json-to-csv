@@ -33,13 +33,21 @@ Works with stream of json/bson objects. For example,
 }
 ```
 
-Each top level object results into an individual csv row.
-The above file will generate a csv with a header and two csv records
+Or with a comma
 
-```csv
-.name,.location.city,.location.country,.tags[1],.location,.tags[0],.tags[2]
-john,mumbai,india,,,,
-jane,,,java,delhi,scala,big data
+```json
+{
+  "name": "john",
+  "location": {
+    "city": "mumbai",
+    "country": "india"
+  }
+},
+{
+  "name": "jane",
+  "location": "delhi",
+  "tags": ["scala", "java", "big data"]
+}
 ```
 
 Version 1.4.0 also adds supports for top level single large array.
@@ -64,7 +72,15 @@ Example:
 ]
 ```
 
-This will result into same csv as above
+Each top level json object results into an individual csv row.
+
+The above json will generate a csv with a header and two csv records
+
+```csv
+.name,.location.city,.location.country,.tags[1],.location,.tags[0],.tags[2]
+john,mumbai,india,,,,
+jane,,,java,delhi,scala,big data
+```
 
 The headers are json-paths of corresponding json fields
 
@@ -74,8 +90,10 @@ The headers are json-paths of corresponding json fields
 | jane  |                |                   | java     | delhi     | scala    | big data |
 
 
-Notice that as shown in above example, the order of json fields may not reflect exactly same in the csv. 
+Notice that as shown in above example, the order of json fields (columns) may not reflect exactly same in the csv. 
 However the indexes of arrays will be maintained correctly.
+
+Order of rows will be same as json records.
 
 
 
