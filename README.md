@@ -48,18 +48,20 @@ All first level items in the array result into an individual csv row.
 Example:
 
 ```json
-[{
-  "name": "john",
-  "location": {
-    "city": "mumbai",
-    "country": "india"
+[
+  {
+    "name": "john",
+    "location": {
+      "city": "mumbai",
+      "country": "india"
+    }
+  },
+  {
+    "name": "jane",
+    "location": "delhi",
+    "tags": ["scala", "java", "big data"]
   }
-},
-{
-  "name": "jane",
-  "location": "delhi",
-  "tags": ["scala", "java", "big data"]
-}]
+]
 ```
 
 This will result into same csv as above
