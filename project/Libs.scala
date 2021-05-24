@@ -16,7 +16,7 @@ object Libs {
   lazy val scopt = ("com.github.scopt" %% "scopt" % "4.0.1").withCrossVersion(
     CrossVersion.for3Use2_13
   )
-  lazy val `scala-csv` = ("com.github.tototoshi" %% "scala-csv" % "1.3.7")
+  lazy val `scala-csv` = ("com.github.tototoshi" %% "scala-csv" % "1.3.8")
     .withCrossVersion(CrossVersion.for3Use2_13)
   lazy val rainbowcli =
     "com.github.bilal-fazlani" % "rainbowcli" % "2.0.0"
