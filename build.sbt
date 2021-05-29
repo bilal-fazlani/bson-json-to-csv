@@ -4,9 +4,9 @@ version := "0.1.0-SNAPSHOT"
 
 organization := "com.bilal-fazlani"
 
-scalaVersion := "3.0.0-RC3"
+scalaVersion := "3.0.0"
 
-resolvers += Resolver.JCenterRepository
+// resolvers += Resolver.JCenterRepository
 resolvers += "jitpack" at "https://jitpack.io"
 
 enablePlugins(NativeImagePlugin)
