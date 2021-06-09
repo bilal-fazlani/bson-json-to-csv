@@ -2,7 +2,7 @@
 
 Creates a flat csv files out of a nested bson/json file
 
-## [Download](https://github.com/bilal-fazlani/bson-json-to-csv/releases/latest/download/bson-json-to-csv)
+## Click [here](https://github.com/bilal-fazlani/bson-json-to-csv/releases/latest/download/bson-json-to-csv) to download
 
 
 [![GitHub Release Date](https://img.shields.io/github/release-date/bilal-fazlani/bson-json-to-csv?style=for-the-badge)](https://github.com/bilal-fazlani/bson-json-to-csv/releases/latest)
