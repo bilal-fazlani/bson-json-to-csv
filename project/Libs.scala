@@ -1,7 +1,7 @@
 import sbt._
 
 object Akka {
-  val AkkaVersion = "2.6.14"
+  val AkkaVersion = "2.6.15"
   val akkaStreams = ("com.typesafe.akka" %% "akka-stream" % AkkaVersion)
     .withCrossVersion(CrossVersion.for3Use2_13)
   val akkaActorTyped = ("com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion)
