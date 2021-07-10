@@ -4,7 +4,7 @@ version := "0.1.0-SNAPSHOT"
 
 organization := "com.bilal-fazlani"
 
-scalaVersion := "3.0.0"
+scalaVersion := "3.0.1"
 
 // resolvers += Resolver.JCenterRepository
 resolvers += "jitpack" at "https://jitpack.io"
