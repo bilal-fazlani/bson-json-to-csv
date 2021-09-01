@@ -24,7 +24,7 @@ object Libs {
 
 object Mongo {
   val `mongo-scala-driver` =
-    ("org.mongodb.scala" %% "mongo-scala-driver" % "4.2.3").withCrossVersion(
+    ("org.mongodb.scala" %% "mongo-scala-driver" % "4.3.1").withCrossVersion(
       CrossVersion.for3Use2_13
     )
 }
