@@ -48,7 +48,7 @@ class CsvGenTest extends CustomFixtures {
     def print(str: String): Unit = ()
   }
 
-  def test(data: String, name:String) =
+  def test(data: String, name: String) =
     actorSystemFixture.test(s"can generate CSV: $name") { system =>
       given ActorSystem = system
       given ExecutionContext = system.dispatcher
