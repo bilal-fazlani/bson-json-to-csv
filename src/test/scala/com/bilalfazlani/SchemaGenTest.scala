@@ -7,7 +7,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.IOResult
 
 class SchemaGenTest extends CustomFixtures {
-  `can generate schema`("""
+  `can generate schema`(
+    """
                           |{
                           |   "id": "1233",
                           |   "person": {
@@ -31,8 +32,11 @@ class SchemaGenTest extends CustomFixtures {
                           |       }
                           |   }
                           |}
-                          |""".stripMargin, "stream")
-  `can generate schema`("""
+                          |""".stripMargin,
+    "stream"
+  )
+  `can generate schema`(
+    """
                           |[{
                           |   "id": "1233",
                           |   "person": {
@@ -56,9 +60,11 @@ class SchemaGenTest extends CustomFixtures {
                           |       }
                           |   }
                           |}]
-                          |""".stripMargin, "array")
+                          |""".stripMargin,
+    "array"
+  )
 
-  def `can generate schema`(source:String, name:String) =
+  def `can generate schema`(source: String, name: String) =
     actorSystemFixture.test(s"can generate schema: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
       given ExecutionContext = actorSystem.dispatcher
@@ -90,7 +96,8 @@ class SchemaGenTest extends CustomFixtures {
       )
     }
 
-  `array support`("""
+  `array support`(
+    """
                     |{
                     |   "id": "1233",
                     |   "person": {
@@ -120,8 +127,11 @@ class SchemaGenTest extends CustomFixtures {
                     |       }
                     |   }
                     |}
-                    |""".stripMargin, "stream")
-  `array support`("""
+                    |""".stripMargin,
+    "stream"
+  )
+  `array support`(
+    """
                     |[{
                     |   "id": "1233",
                     |   "person": {
@@ -151,9 +161,11 @@ class SchemaGenTest extends CustomFixtures {
                     |       }
                     |   }
                     |}]
-                    |""".stripMargin, "array")
+                    |""".stripMargin,
+    "array"
+  )
 
-  def `array support`(source:String, name:String) =
+  def `array support`(source: String, name: String) =
     actorSystemFixture.test(s"array support: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
       given ExecutionContext = actorSystem.dispatcher
@@ -190,20 +202,26 @@ class SchemaGenTest extends CustomFixtures {
       )
     }
 
-  `matrix support`("""
+  `matrix support`(
+    """
                      |{
                      |   "simple-matrix": [[1,2], [3,4]],
                      |   "complex-matrix": [[{"id":1},{"id":2}], [{"id":3},{"id":4}]]
                      |}
-                     |""".stripMargin, "stream")
-  `matrix support`("""
+                     |""".stripMargin,
+    "stream"
+  )
+  `matrix support`(
+    """
                      |[{
                      |   "simple-matrix": [[1,2], [3,4]],
                      |   "complex-matrix": [[{"id":1},{"id":2}], [{"id":3},{"id":4}]]
                      |}]
-                     |""".stripMargin, "array")
+                     |""".stripMargin,
+    "array"
+  )
 
-  def `matrix support`(source:String, name:String) =
+  def `matrix support`(source: String, name: String) =
     actorSystemFixture.test(s"matrix support: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
       given ExecutionContext = actorSystem.dispatcher
@@ -234,7 +252,8 @@ class SchemaGenTest extends CustomFixtures {
       )
     }
 
-  `conflicting data types`("""
+  `conflicting data types`(
+    """
                              |{
                              |   "person": {
                              |     "name": "bilal"
@@ -253,8 +272,11 @@ class SchemaGenTest extends CustomFixtures {
                              |     "name": 3
                              |   }
                              |}
-                             |""".stripMargin, "stream")
-  `conflicting data types`("""
+                             |""".stripMargin,
+    "stream"
+  )
+  `conflicting data types`(
+    """
                              |[{
                              |   "person": {
                              |     "name": "bilal"
@@ -273,48 +295,56 @@ class SchemaGenTest extends CustomFixtures {
                              |     "name": 3
                              |   }
                              |}]
-                             |""".stripMargin, "array")
+                             |""".stripMargin,
+    "array"
+  )
 
-  def `conflicting data types`(source:String, name:String) =
+  def `conflicting data types`(source: String, name: String) =
     actorSystemFixture.test(s"conflicting data types: $name") { actorSystem =>
-    implicit val mat: Materializer = Materializer(actorSystem)
-    given ExecutionContext = actorSystem.dispatcher
-    val jsonFraming = new JsonFraming
-    val schemaGen = new SchemaGen(jsonFraming)
+      implicit val mat: Materializer = Materializer(actorSystem)
+      given ExecutionContext = actorSystem.dispatcher
+      val jsonFraming = new JsonFraming
+      val schemaGen = new SchemaGen(jsonFraming)
 
-    val singleSource = Source
-      .single(ByteString(source))
-      .mapMaterializedValue(_ => Future.successful(IOResult(0)))
+      val singleSource = Source
+        .single(ByteString(source))
+        .mapMaterializedValue(_ => Future.successful(IOResult(0)))
 
-    val schema: Seq[JsonPath] =
-      schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
+      val schema: Seq[JsonPath] =
+        schemaGen.generate(singleSource).runWith(Sink.last).block.paths.toList
 
-    val expected: Seq[String] = Seq(
-      ".person.name",
-      ".person.name.first",
-      ".person.name.last"
-    )
+      val expected: Seq[String] = Seq(
+        ".person.name",
+        ".person.name.first",
+        ".person.name.last"
+      )
 
-    assertEquals(
-      schema.map(_.toString).sorted,
-      expected.sorted
-    )
-  }
+      assertEquals(
+        schema.map(_.toString).sorted,
+        expected.sorted
+      )
+    }
 
-  `empty records`("""
+  `empty records`(
+    """
                     |{
                     |}
                     |{
                     |}
-                    |""".stripMargin, "stream")
-  `empty records`("""
+                    |""".stripMargin,
+    "stream"
+  )
+  `empty records`(
+    """
                     |[{
                     |},
                     |{
                     |}]
-                    |""".stripMargin, "array")
+                    |""".stripMargin,
+    "array"
+  )
 
-  def `empty records`(source:String, name:String) =
+  def `empty records`(source: String, name: String) =
     actorSystemFixture.test(s"empty records: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
       given ExecutionContext = actorSystem.dispatcher
@@ -333,19 +363,25 @@ class SchemaGenTest extends CustomFixtures {
       assertEquals(schema, expected)
     }
 
-  `invalid text`("""asdasd...dsaasdas
+  `invalid text`(
+    """asdasd...dsaasdas
                    |asdasdasdasd a.asd
                    |{
                    |"name":"john"
-                   |}""".stripMargin, "stream")
-  `invalid text`("""asdasd...dsaasdas
+                   |}""".stripMargin,
+    "stream"
+  )
+  `invalid text`(
+    """asdasd...dsaasdas
                    |asdasdasdasd a.asd
                    |[{
                    |"name":"john"
-                   |}]""".stripMargin, "array")
+                   |}]""".stripMargin,
+    "array"
+  )
 
-  def `invalid text`(source:String, name:String) =
-    actorSystemFixture.test(s"invalid text before json: $name"){ actorSystem =>
+  def `invalid text`(source: String, name: String) =
+    actorSystemFixture.test(s"invalid text before json: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
       given ExecutionContext = actorSystem.dispatcher
       val jsonFraming = new JsonFraming
