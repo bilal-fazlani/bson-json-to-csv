@@ -12,7 +12,7 @@ object Akka {
 }
 
 object Libs {
-  lazy val munit = "org.scalameta" %% "munit" % "0.7.27"
+  lazy val munit = "org.scalameta" %% "munit" % "0.7.29"
   lazy val scopt = ("com.github.scopt" %% "scopt" % "4.0.1").withCrossVersion(
     CrossVersion.for3Use2_13
   )
