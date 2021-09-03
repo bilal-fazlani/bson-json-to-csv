@@ -7,7 +7,7 @@ object Akka {
   val akkaActorTyped = ("com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion)
     .withCrossVersion(CrossVersion.for3Use2_13)
   val jsonStreaming =
-    ("com.lightbend.akka" %% "akka-stream-alpakka-json-streaming" % "3.0.2")
+    ("com.lightbend.akka" %% "akka-stream-alpakka-json-streaming" % "3.0.3")
       .withCrossVersion(CrossVersion.for3Use2_13)
 }
 
