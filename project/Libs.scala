@@ -1,18 +1,18 @@
 import sbt._
 
 object Akka {
-  val AkkaVersion = "2.6.15"
+  val AkkaVersion = "2.6.16"
   val akkaStreams = ("com.typesafe.akka" %% "akka-stream" % AkkaVersion)
     .withCrossVersion(CrossVersion.for3Use2_13)
   val akkaActorTyped = ("com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion)
     .withCrossVersion(CrossVersion.for3Use2_13)
   val jsonStreaming =
-    ("com.lightbend.akka" %% "akka-stream-alpakka-json-streaming" % "3.0.2")
+    ("com.lightbend.akka" %% "akka-stream-alpakka-json-streaming" % "3.0.3")
       .withCrossVersion(CrossVersion.for3Use2_13)
 }
 
 object Libs {
-  lazy val munit = "org.scalameta" %% "munit" % "0.7.27"
+  lazy val munit = "org.scalameta" %% "munit" % "0.7.29"
   lazy val scopt = ("com.github.scopt" %% "scopt" % "4.0.1").withCrossVersion(
     CrossVersion.for3Use2_13
   )
