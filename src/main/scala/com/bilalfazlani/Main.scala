@@ -77,7 +77,8 @@ object Main extends StreamFlows {
             val outputFile =
               x.outputFile.getOrElse(CLIOptions.getOutputFile(x.inputFile))
             if outputFile.toPath.toString != "." && outputFile.exists then
-              failure(s"file ${outputFile.toPath} already exists")
+              failure(s"file ${outputFile.toPath} already exists." +
+                s"\nUse 'overwrite' option to ignore this error")
             else success
           case _ => success
         }
