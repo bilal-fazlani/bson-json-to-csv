@@ -11,11 +11,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
-    - name: Get all git tags
-      run: git fetch --prune --unshallow --tags -f
-    - uses: olegtarasov/get-tag@v2.1
-      id: tagName      
+      uses: actions/checkout@v2  
     - name: cache
       uses: coursier/cache-action@v6
     - name: coursier-setup
@@ -33,6 +29,8 @@ jobs:
 #        sbt nativeImage
 # --- need to find a way to generate bins for multiple os ----
     - name: build jvm binary
+      env:
+        GIT_TAG_NAME: ${{ github.event.release.tag_name }}
       run: |
         sbtn publishLocal
         cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3:${{ github.event.release.tag_name }} -f -r jitpack

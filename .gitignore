@@ -8,3 +8,4 @@ target
 bson-json-to-csv
 **.json
 **.csv
+metals.sbt
