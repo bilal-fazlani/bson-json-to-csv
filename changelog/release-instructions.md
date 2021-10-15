@@ -4,9 +4,11 @@ Create a file with matching tag name that you want to publish
 
 You can keep modifying the file with multiple pushes
 
-Once a build is finalised, tag it with "v". For example `v2.0.0-M1`
+Once a build is finalised, tag it with a release number, example `1.5.0-RC2`. 
+Push the tag.
 
-Then create a new github release with this existing tag name.
+Then create a new github release with this existing tag name. 
+The release title can be different than tag name, for example `v1.5.0-RC2`.
 
 You do not need to add any release notes or files manually in github release.
 
