@@ -10,12 +10,17 @@ scalaVersion := "3.0.2"
 resolvers += "jitpack" at "https://jitpack.io"
 
 enablePlugins(NativeImagePlugin)
+enablePlugins(BuildInfoPlugin)
 
 scalacOptions ++= Seq(
+  "-rewrite",
   "-source",
-  "future",
+  "future-migration",
   "-deprecation"
 )
+
+buildInfoKeys := Seq[BuildInfoKey](name, version)
+buildInfoPackage := "com.bilalfazlani"
 
 //GRAAL NATIVE IMAGE
 nativeImageOptions ++= Seq("--initialize-at-build-time", "--no-fallback")

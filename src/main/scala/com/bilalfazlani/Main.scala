@@ -48,7 +48,10 @@ object Main extends StreamFlows {
       import builder.*
       OParser.sequence(
         programName("bson-json-to-csv"),
-        head("convert nested bson/json files to flat csv files"),
+        head(
+          "convert nested bson/json files to flat csv files\n" +
+            "version: " + BuildInfo.version
+        ),
         arg[File]("input-file")
           .valueName("<file>")
           .required()
@@ -77,8 +80,10 @@ object Main extends StreamFlows {
             val outputFile =
               x.outputFile.getOrElse(CLIOptions.getOutputFile(x.inputFile))
             if outputFile.toPath.toString != "." && outputFile.exists then
-              failure(s"file ${outputFile.toPath} already exists." +
-                s"\nUse 'overwrite' option to ignore this error")
+              failure(
+                s"file ${outputFile.toPath} already exists." +
+                  s"\nUse 'overwrite' option to ignore this error"
+              )
             else success
           case _ => success
         }
