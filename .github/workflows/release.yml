@@ -31,7 +31,7 @@ jobs:
     - name: build jvm binary
       run: |
         sbtn publishLocal
-        cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3.0.0-RC3:0.1.0-SNAPSHOT -f -r jitpack
+        cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3.0.2:0.1.0-SNAPSHOT -f -r jitpack
     - name: publish
       uses: softprops/action-gh-release@v1
       with:
