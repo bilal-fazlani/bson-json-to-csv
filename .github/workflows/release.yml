@@ -12,6 +12,10 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v2
+    - name: Get all git tags
+      run: git fetch --prune --unshallow --tags -f
+    - uses: olegtarasov/get-tag@v2.1
+      id: tagName      
     - name: cache
       uses: coursier/cache-action@v6
     - name: coursier-setup
@@ -31,7 +35,7 @@ jobs:
     - name: build jvm binary
       run: |
         sbtn publishLocal
-        cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3:0.1.0-SNAPSHOT -f -r jitpack
+        cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3:${{ github.event.release.tag_name }} -f -r jitpack
     - name: publish
       uses: softprops/action-gh-release@v1
       with:

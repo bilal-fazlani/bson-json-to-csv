@@ -1,6 +1,6 @@
 name := "bson-json-to-csv"
 
-version := "0.1.0-SNAPSHOT"
+version := sys.env.get("GIT_TAG_NAME").getOrElse("0.1.0-SNAPSHOT")
 
 organization := "com.bilal-fazlani"
 
