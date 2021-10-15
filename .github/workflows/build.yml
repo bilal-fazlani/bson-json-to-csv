@@ -4,7 +4,7 @@ on:
   push:
     paths-ignore:
       - '**.md'
-      - .github/workflows/release.yml
+      - .github/workflows/release-new.yml
       - '**.png'
       - '**.txt'
 
