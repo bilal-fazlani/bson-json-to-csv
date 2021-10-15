@@ -13,18 +13,23 @@ import scala.util.control.NonFatal
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using ColorContext) extends StreamFlows {
+class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using
+    ColorContext
+) extends StreamFlows {
 
   import printer.*
-  
-  def generateCsv(source: => Source[ByteString, Future[IOResult]]): Source[CSVRow, Future[IOResult]] = {
+
+  def generateCsv(
+      source: => Source[ByteString, Future[IOResult]]
+  ): Source[CSVRow, Future[IOResult]] = {
     val params = schema.paths.toList
     val contents: Source[CSVRow, Future[IOResult]] =
-      jsonFraming.frame(source)
+      jsonFraming
+        .frame(source)
         .via(bsonConvert)
         .map(x => getCsvRow(x, params))
-        .via(viaIndex{x => 
-          val pValue = (((x._2 + 1D) / schema.rows.toDouble) * 100).toInt
+        .via(viaIndex { x =>
+          val pValue = (((x._2 + 1d) / schema.rows.toDouble) * 100).toInt
           val percentage = s"$pValue%".yellow
           val title = "Generating csv".bold
           print(s"\r$title: $percentage ")
@@ -37,13 +42,16 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using C
       .concatMat(contents)(Keep.right)
   }
 
-  private def getCsvRow(bsonDocument: BsonDocument, params: List[JsonPath]): CSVRow =
+  private def getCsvRow(
+      bsonDocument: BsonDocument,
+      params: List[JsonPath]
+  ): CSVRow =
     CSVRow(
       params
         .map(bsonDocument.getLeafValue)
         .map(getStringRepr)
     )
-    
+
   private def getStringRepr(bsonValueMaybe: Option[BsonValue]): String =
     (bsonValueMaybe match {
       case Some(null) | None       => ""
@@ -59,6 +67,6 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using C
       case Some(x: BsonTimestamp)  => x.encodeToString
       case Some(_: BsonNull)       => ""
     })
-    .replaceAll(",", "")
-    .replaceAll("\n", "")
+      .replaceAll(",", "")
+      .replaceAll("\n", "")
 }

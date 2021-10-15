@@ -10,14 +10,18 @@ import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 import com.bilalfazlani.Node.*
 
-case class Schema(paths: Set[JsonPath] = Set.empty, rows:Long = 0){
-    infix def +(morePaths: Set[JsonPath]): Schema = Schema(paths ++ morePaths, rows + 1)
+case class Schema(paths: Set[JsonPath] = Set.empty, rows: Long = 0) {
+  infix def +(morePaths: Set[JsonPath]): Schema =
+    Schema(paths ++ morePaths, rows + 1)
 }
 
 class SchemaGen(jsonFraming: JsonFraming) extends StreamFlows {
 
-  def generate(source: => Source[ByteString, Future[IOResult]]) : Source[Schema, Future[IOResult]] =
-    jsonFraming.frame(source)
+  def generate(
+      source: => Source[ByteString, Future[IOResult]]
+  ): Source[Schema, Future[IOResult]] =
+    jsonFraming
+      .frame(source)
       .via(bsonConvert)
       .map(docToPaths(_, None))
       .scan(Schema())(_ + _)

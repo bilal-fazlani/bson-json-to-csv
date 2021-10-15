@@ -1,4 +1,4 @@
 package com.bilalfazlani
 
 enum FileType:
-  case Array,ObjectStream
+  case Array, JsonStream

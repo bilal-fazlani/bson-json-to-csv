@@ -11,8 +11,8 @@ import java.nio.file.{Path, StandardOpenOption}
 import scala.concurrent.Future
 
 trait StreamFlows {
-  def file(path: String): Source[ByteString, Future[IOResult]] =
-    FileIO.fromPath(Path.of(path))
+  def file(path: Path): Source[ByteString, Future[IOResult]] =
+    FileIO.fromPath(path)
 
   val bsonConvert: Flow[String, BsonDocument, NotUsed] =
     Flow.fromFunction[String, BsonDocument](BsonDocument.apply)
@@ -20,15 +20,16 @@ trait StreamFlows {
   val byteString: Flow[CSVRow, ByteString, NotUsed] =
     Flow.fromFunction[CSVRow, ByteString](x => ByteString.apply(x.toString))
 
-  def fileSink(path:String, overwrite:Boolean) = FileIO.toPath(
-          Path.of(path),
-          Set(
-            if overwrite then StandardOpenOption.CREATE else StandardOpenOption.CREATE_NEW,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.TRUNCATE_EXISTING
-          ),
-          0
-        )
+  def fileSink(path: Path, overwrite: Boolean) = FileIO.toPath(
+    path,
+    Set(
+      if overwrite then StandardOpenOption.CREATE
+      else StandardOpenOption.CREATE_NEW,
+      StandardOpenOption.WRITE,
+      StandardOpenOption.TRUNCATE_EXISTING
+    ),
+    0
+  )
 
   def unique[T]: Flow[T, T, NotUsed] =
     Flow[T].statefulMapConcat(() => {

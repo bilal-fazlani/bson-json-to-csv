@@ -17,16 +17,27 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import FileTypeFinder.UnknownFileTypeException
+import java.nio.file.Paths
 
 case class CLIOptions(
     inputFile: File = new File("."),
     outputFile: Option[File] = None,
     noColor: Boolean = false,
     overrideFile: Boolean = false
-){
-  val outputFilePath:Path = Path.of(outputFile
-        .map(_.getPath)
-        .getOrElse(inputFile.getPath + ".csv"))
+)
+
+object CLIOptions {
+  def getOutputFile(inputFile: File): File =
+    if inputFile.toPath.toString != "." && inputFile.exists then
+      val fileName = inputFile.getName
+      val reg = "(.*)\\.(.*)".r
+      val withoutExtension = fileName match {
+        case reg(n, e) => n
+        case x         => x
+      }
+      val parent = Path.of(inputFile.getCanonicalPath).getParent.toString
+      Paths.get(parent, withoutExtension + ".csv").toFile
+    else File(".")
 }
 
 object Main extends StreamFlows {
@@ -61,9 +72,12 @@ object Main extends StreamFlows {
           .optional()
           .action((o, c) => c.copy(noColor = true)),
         help("help").text("print help text"),
-        checkConfig{
-          case x@CLIOptions(_, _, _, false) => 
-            if x.outputFilePath.toFile.exists then failure(s"file ${x.outputFilePath.toString} already exists")
+        checkConfig {
+          case x @ CLIOptions(_, _, _, false) =>
+            val outputFile =
+              x.outputFile.getOrElse(CLIOptions.getOutputFile(x.inputFile))
+            if outputFile.toPath.toString != "." && outputFile.exists then
+              failure(s"file ${outputFile.toPath} already exists")
             else success
           case _ => success
         }
@@ -79,47 +93,58 @@ object Main extends StreamFlows {
 
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
+
+    println("Input: ".bold + options.inputFile.toPath)
+    val outputFile =
+      options.outputFile.getOrElse(CLIOptions.getOutputFile(options.inputFile))
+    println("Output: ".bold + outputFile.toPath.toString)
+
     given system: ActorSystem = ActorSystem("main")
     import system.dispatcher
     val fileTypeFinder = new FileTypeFinder
-    print("Detecting file type: ".bold)
+    print("File type: ".bold)
 
-    fileTypeFinder.find(file(options.inputFile.getPath)).flatMap{fileType =>
-      println(fileType.toString.yellow)
-      val jsonFraming = new JsonFraming
-      val schemaGen = new SchemaGen(jsonFraming)
-      schemaGen.generate(file(options.inputFile.getPath))
-        .alsoTo(Sink.foreach{ (x:Schema) =>
-          val columns = s"${x.paths.size} unique fields".yellow
-          val rows = s"${x.rows} records".yellow
-          val title = "Generating schema".bold
-          print(s"\r$title: found $columns in $rows ")
-        })
-        .toMat(Sink.last)(Keep.both)
-        .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
-        .run
-        .flatMap { schema =>
-          if(schema.rows == 0) throw Error.NoRows
-          else if(schema.paths.size == 0) throw Error.NoFields
-          else println("DONE".green.bold)
-          val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
-          val stream = csvGen.generateCsv(file(options.inputFile.getPath))
-          stream
-            .via(byteString)
-            .toMat(fileSink(options.outputFilePath.toString, options.overrideFile))(Keep.both)
-            .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
-            .run()
-        }
-    }
-    .onComplete {
-        case Success(_) => 
+    fileTypeFinder
+      .find(file(options.inputFile.toPath))
+      .flatMap { fileType =>
+        println(fileType.toString.yellow)
+        val jsonFraming = new JsonFraming
+        val schemaGen = new SchemaGen(jsonFraming)
+        schemaGen
+          .generate(file(options.inputFile.toPath))
+          .alsoTo(Sink.foreach { (x: Schema) =>
+            val columns = s"${x.paths.size} unique fields".yellow
+            val rows = s"${x.rows} records".yellow
+            val title = "Generating schema".bold
+            print(s"\r$title: found $columns in $rows ")
+          })
+          .toMat(Sink.last)(Keep.both)
+          .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
+          .run
+          .flatMap { schema =>
+            if (schema.rows == 0) throw Error.NoRows
+            else if (schema.paths.size == 0) throw Error.NoFields
+            else println("DONE".green.bold)
+            val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
+            val stream = csvGen.generateCsv(file(options.inputFile.toPath))
+            stream
+              .via(byteString)
+              .toMat(
+                fileSink(outputFile.toPath, options.overrideFile)
+              )(Keep.both)
+              .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
+              .run()
+          }
+      }
+      .onComplete {
+        case Success(_) =>
           println("DONE".green.bold)
           system.terminate().block
         case Failure(Error.NoRows) =>
           println("FAILED".red.bold)
           println("No json records found in file".red)
           sys.exit(1)
-        case Failure(Error.NoFields) => 
+        case Failure(Error.NoFields) =>
           println("FAILED".red.bold)
           println("No fields found in any records".red)
           sys.exit(1)
@@ -135,7 +160,7 @@ object Main extends StreamFlows {
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
           sys.exit(1)
-        case Failure(err) => 
+        case Failure(err) =>
           println("FAILED".red.bold)
           err.printStackTrace
           sys.exit(1)
@@ -143,6 +168,6 @@ object Main extends StreamFlows {
   }
 }
 
-enum Error extends RuntimeException{
+enum Error extends RuntimeException {
   case NoRows, NoFields
 }

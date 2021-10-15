@@ -31,7 +31,7 @@ extension (doc: BsonValue) {
     try {
       Option(v)
     } catch {
-      case NonFatal(_: NullPointerException) => None
+      case NonFatal(_: NullPointerException)          => None
       case NonFatal(x: BsonInvalidOperationException) => None
     }
 
