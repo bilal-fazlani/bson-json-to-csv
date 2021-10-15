@@ -62,8 +62,8 @@ object Main extends StreamFlows {
           .valueName("<file>")
           .text("Path for output csv file. Default: <input-file>.csv")
           .optional()
-          .action((o, c) => c.copy(outputFile = o)),  
-        opt[Unit]("overwrite")
+          .action((o, c) => c.copy(outputFile = o)),
+        opt[Unit]('f', "overwrite")
           .text("delete and create a new new outfile if one already exists")
           .optional()
           .action((o, c) => c.copy(overrideFile = true)),
