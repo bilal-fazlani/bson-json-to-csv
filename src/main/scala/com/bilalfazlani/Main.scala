@@ -42,6 +42,24 @@ object CLIOptions {
 
 object Main extends StreamFlows {
 
+  private def updateInfo =
+    AppVersion.check match {
+      case VersionCheck.UpdateAvailable(update, current) =>
+        s"update v$update available (installed version: v$current)"
+      case VersionCheck.NoUpdateAvailable =>
+        "version: " + BuildInfo.version
+      case VersionCheck.CouldNotCheckLatestVersion =>
+        "version: " + BuildInfo.version
+    }
+
+  private def updateInfo2(using ColorContext) =
+    AppVersion.check match {
+      case VersionCheck.UpdateAvailable(update, current) =>
+        println("[info] ".yellow.bold + s"update v$update available".yellow)
+        println()
+      case _ =>
+    }
+
   def main(args: Array[String]): Unit = {
     val builder = OParser.builder[CLIOptions]
     val parser = {
@@ -50,7 +68,7 @@ object Main extends StreamFlows {
         programName("bson-json-to-csv"),
         head(
           "convert nested bson/json files to flat csv files\n" +
-            "version: " + BuildInfo.version
+            updateInfo
         ),
         arg[File]("input-file")
           .valueName("<file>")
@@ -99,6 +117,8 @@ object Main extends StreamFlows {
 
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
+
+    updateInfo2
 
     println("Input: ".bold + options.inputFile.toPath)
     val outputFile =
