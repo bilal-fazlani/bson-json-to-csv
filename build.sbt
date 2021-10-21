@@ -41,7 +41,7 @@ libraryDependencies ++= Seq(
   Mongo.`mongo-scala-driver`,
   Libs.scopt,
   Libs.rainbowcli,
-  Libs.mavenArtifact,
+  Libs.semver4j,
   Libs.sttpCore,
   Libs.sttpCirce,
   Libs.`scala-csv` % Test,

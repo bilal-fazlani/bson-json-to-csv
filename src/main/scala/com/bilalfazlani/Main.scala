@@ -42,20 +42,20 @@ object CLIOptions {
 
 object Main extends StreamFlows {
 
-  private def updateInfo =
+  private def getVersionString =
     AppVersion.check match {
       case VersionCheck.UpdateAvailable(update, current) =>
-        s"update v$update available (installed version: v$current)"
+        s"version: v$current (update v$update available)"
       case VersionCheck.NoUpdateAvailable =>
-        "version: " + BuildInfo.version
+        s"version: v${BuildInfo.version}"
       case VersionCheck.CouldNotCheckLatestVersion =>
-        "version: " + BuildInfo.version
+        s"version: v${BuildInfo.version}"
     }
 
-  private def updateInfo2(using ColorContext) =
+  private def printVersionUpdate(using ColorContext) =
     AppVersion.check match {
       case VersionCheck.UpdateAvailable(update, current) =>
-        println("[info] ".yellow.bold + s"update v$update available".yellow)
+        println("[info] ".yellow.bold + "update ".yellow + s"v$update".green.bold + " available".yellow)
         println()
       case _ =>
     }
@@ -68,7 +68,7 @@ object Main extends StreamFlows {
         programName("bson-json-to-csv"),
         head(
           "convert nested bson/json files to flat csv files\n" +
-            updateInfo
+            getVersionString
         ),
         arg[File]("input-file")
           .valueName("<file>")
@@ -117,15 +117,14 @@ object Main extends StreamFlows {
 
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
-
-    updateInfo2
-
+    printVersionUpdate
     println("Input: ".bold + options.inputFile.toPath)
     val outputFile =
       options.outputFile.getOrElse(CLIOptions.getOutputFile(options.inputFile))
     println("Output: ".bold + outputFile.toPath.toString)
 
     given system: ActorSystem = ActorSystem("main")
+
     import system.dispatcher
     val fileTypeFinder = new FileTypeFinder
     print("File type: ".bold)
@@ -169,25 +168,31 @@ object Main extends StreamFlows {
         case Failure(Error.NoRows) =>
           println("FAILED".red.bold)
           println("No json records found in file".red)
+          system.terminate().block
           sys.exit(1)
         case Failure(Error.NoFields) =>
           println("FAILED".red.bold)
           println("No fields found in any records".red)
+          system.terminate().block
           sys.exit(1)
         case Failure(err) if err.isInstanceOf[UnknownFileTypeException] =>
           println("FAILED".red.bold)
           println(err.getMessage.red)
+          system.terminate().block
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
+          system.terminate().block
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[JsonParseException] =>
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
+          system.terminate().block
           sys.exit(1)
         case Failure(err) =>
           println("FAILED".red.bold)
+          system.terminate().block
           err.printStackTrace
           sys.exit(1)
       }

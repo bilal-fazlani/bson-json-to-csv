@@ -21,7 +21,7 @@ object Libs {
   lazy val rainbowcli =
     "com.github.bilal-fazlani" % "rainbowcli" % "2.0.1"
   //for version compare
-  lazy val mavenArtifact = "org.apache.maven" % "maven-artifact" % "3.8.3"
+  lazy val semver4j = "com.vdurmont" % "semver4j" % "3.1.0"
   lazy val sttpCore = "com.softwaremill.sttp.client3" %% "core" % "3.3.15"
   lazy val sttpCirce = "com.softwaremill.sttp.client3" %% "circe" % "3.3.15"
 }
