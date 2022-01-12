@@ -69,4 +69,5 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using
     })
       .replaceAll(",", "")
       .replaceAll("\n", "")
+      .replaceAll("\r", "")
 }
