@@ -4,7 +4,7 @@ version := sys.env.get("GIT_TAG_NAME").getOrElse("0.1.0-SNAPSHOT")
 
 organization := "com.bilal-fazlani"
 
-scalaVersion := "3.0.2"
+scalaVersion := "3.1.1"
 
 // resolvers += Resolver.JCenterRepository
 resolvers += "jitpack" at "https://jitpack.io"
