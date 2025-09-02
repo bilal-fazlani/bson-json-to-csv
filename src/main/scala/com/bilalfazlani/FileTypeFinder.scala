@@ -1,8 +1,8 @@
 package com.bilalfazlani
 
-import akka.stream.{IOResult, Materializer}
-import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.stream.{IOResult, Materializer}
+import org.apache.pekko.stream.scaladsl.{FileIO, Keep, Sink, Source}
+import org.apache.pekko.util.ByteString
 import FileTypeFinder.UnknownFileTypeException
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,10 +40,11 @@ class FileTypeFinder(using Materializer, ExecutionContext) {
 
         if (objectStreamIdentifierIndex != -1 && arrayIdentifierIndex != -1) {
           if (
-            objectStreamIdentifierIndex.min(
-              arrayIdentifierIndex
-            ) == objectStreamIdentifierIndex
-          ) then FileType.JsonStream
+              objectStreamIdentifierIndex.min(
+                arrayIdentifierIndex
+              ) == objectStreamIdentifierIndex
+            )
+          then FileType.JsonStream
           else FileType.Array
         } else if (objectStreamIdentifierIndex != -1) FileType.JsonStream
         else if (arrayIdentifierIndex != -1) FileType.Array

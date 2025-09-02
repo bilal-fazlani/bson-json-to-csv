@@ -1,9 +1,9 @@
 package com.bilalfazlani
 
-import akka.actor.ActorSystem
-import akka.stream.IOResult
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.IOResult
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.ByteString
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, DefaultCSVFormat}
 import munit.FunSuite
 import org.junit.Assert

@@ -1,6 +1,6 @@
 package com.bilalfazlani
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 
 trait CustomFixtures extends munit.FunSuite {
   val actorSystemFixture: FunFixture[ActorSystem] = FunFixture[ActorSystem](

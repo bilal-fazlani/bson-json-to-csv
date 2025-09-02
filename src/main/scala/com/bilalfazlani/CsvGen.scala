@@ -1,12 +1,12 @@
 package com.bilalfazlani
 
 import com.bilalfazlani.rainbowcli.*
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.IOResult
-import akka.stream.scaladsl.Framing.FramingException
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.IOResult
+import org.apache.pekko.stream.scaladsl.Framing.FramingException
+import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
+import org.apache.pekko.util.ByteString
 import org.mongodb.scala.bson.*
 import StringEncoder.*
 import scala.util.control.NonFatal

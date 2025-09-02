@@ -1,12 +1,10 @@
 package com.bilalfazlani
 
 import com.bilalfazlani.rainbowcli.*
-import akka.NotUsed
 import scala.util.{Success, Failure}
-import akka.actor.ActorSystem
-import akka.stream.IOResult
-import akka.stream.scaladsl.Framing.FramingException
-import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl.Framing.FramingException
+import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
 import org.mongodb.scala.bson.*
 import scopt.OParser
 import StringEncoder.*
@@ -18,6 +16,8 @@ import scala.concurrent.Future
 import scala.util.control.NonFatal
 import FileTypeFinder.UnknownFileTypeException
 import java.nio.file.Paths
+import scala.concurrent.Await
+import scala.concurrent.duration.*
 
 case class CLIOptions(
     inputFile: File = new File("."),
@@ -55,10 +55,15 @@ object Main extends StreamFlows {
   private def printVersionUpdate(using ColorContext) =
     AppVersion.check match {
       case VersionCheck.UpdateAvailable(update, current) =>
-        println("[info] ".yellow.bold + "update ".yellow + s"v$update".green.bold + " available".yellow)
+        println(
+          "[info] ".yellow.bold + "update ".yellow + s"v$update".green.bold + " available".yellow
+        )
         println()
       case _ =>
     }
+
+  private def terminate(using system: ActorSystem): Unit =
+    Await.result(system.terminate(), 10.seconds)
 
   def main(args: Array[String]): Unit = {
     val builder = OParser.builder[CLIOptions]
@@ -164,35 +169,35 @@ object Main extends StreamFlows {
       .onComplete {
         case Success(_) =>
           println("DONE".green.bold)
-          system.terminate().block
+          terminate
         case Failure(Error.NoRows) =>
           println("FAILED".red.bold)
           println("No json records found in file".red)
-          system.terminate().block
+          terminate
           sys.exit(1)
         case Failure(Error.NoFields) =>
           println("FAILED".red.bold)
           println("No fields found in any records".red)
-          system.terminate().block
+          terminate
           sys.exit(1)
         case Failure(err) if err.isInstanceOf[UnknownFileTypeException] =>
           println("FAILED".red.bold)
           println(err.getMessage.red)
-          system.terminate().block
+          terminate
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[FramingException] =>
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
-          system.terminate().block
+          terminate
           sys.exit(1)
         case Failure(err) if err.getCause.isInstanceOf[JsonParseException] =>
           println("FAILED".red.bold)
           println("Invalid JSON encountered")
-          system.terminate().block
+          terminate
           sys.exit(1)
         case Failure(err) =>
           println("FAILED".red.bold)
-          system.terminate().block
+          terminate
           err.printStackTrace
           sys.exit(1)
       }

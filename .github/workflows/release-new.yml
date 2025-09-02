@@ -1,46 +1,46 @@
-name: Release
+# name: Release
 
-on:
-  release:
-    types: [published]
+# on:
+#   release:
+#     types: [published]
 
-jobs:
-  build:
+# jobs:
+#   build:
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2  
-    - name: cache
-      uses: coursier/cache-action@v6
-    - name: coursier-setup
-      uses: laughedelic/coursier-setup@v1
-      with:
-        jvm: graalvm-java11:21.0.0
-# --- need to find a way to generate bins for multiple os ----
-#    - name: install native image
-#      run: |
-#        cd $JAVA_HOME/bin
-#        ./gu install native-image
-#    - name: build native binary
-#      run: |
-#        cd $GITHUB_WORKSPACE
-#        sbt nativeImage
-# --- need to find a way to generate bins for multiple os ----
-    - name: build jvm binary
-      env:
-        GIT_TAG_NAME: ${{ github.event.release.tag_name }}
-      run: |
-        sbtn publishLocal
-        cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3:${{ github.event.release.tag_name }} -f -r jitpack
-    - name: publish
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          bson-json-to-csv
-        body_path: changelog/${{ github.event.release.tag_name }}.md
-        tag_name: ${{ github.event.release.tag_name }}
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     steps:
+#     - name: checkout
+#       uses: actions/checkout@v5
+#     - name: cache
+#       uses: coursier/cache-action@v6
+#     - name: coursier-setup
+#       uses: laughedelic/coursier-setup@v1
+#       with:
+#         jvm: graalvm-community:24.0.2
+# # --- need to find a way to generate bins for multiple os ----
+# #    - name: install native image
+# #      run: |
+# #        cd $JAVA_HOME/bin
+# #        ./gu install native-image
+# #    - name: build native binary
+# #      run: |
+# #        cd $GITHUB_WORKSPACE
+# #        sbt nativeImage
+# # --- need to find a way to generate bins for multiple os ----
+#     - name: build jvm binary
+#       env:
+#         GIT_TAG_NAME: ${{ github.event.release.tag_name }}
+#       run: |
+#         sbtn publishLocal
+#         cs bootstrap -o bson-json-to-csv --standalone com.bilal-fazlani:bson-json-to-csv_3:${{ github.event.release.tag_name }} -f -r jitpack
+#     - name: publish
+#       uses: softprops/action-gh-release@v1
+#       with:
+#         files: |
+#           bson-json-to-csv
+#         body_path: changelog/${{ github.event.release.tag_name }}.md
+#         tag_name: ${{ github.event.release.tag_name }}
+#       env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

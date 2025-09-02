@@ -1,9 +1,9 @@
 package com.bilalfazlani
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.*
-import akka.util.ByteString
-import akka.stream.IOResult
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.*
+import org.apache.pekko.util.ByteString
+import org.apache.pekko.stream.IOResult
 import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
 import scala.concurrent.{Future, ExecutionContext}
 import scala.jdk.CollectionConverters.*

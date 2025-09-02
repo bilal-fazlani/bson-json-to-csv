@@ -1,10 +1,16 @@
 package com.bilalfazlani
 
-import akka.NotUsed
-import akka.stream.IOResult
-import akka.stream.alpakka.json.scaladsl.JsonReader
-import akka.stream.scaladsl.{FileIO, Flow, Framing, JsonFraming, Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.NotUsed
+import org.apache.pekko.stream.IOResult
+import org.apache.pekko.stream.scaladsl.{
+  FileIO,
+  Flow,
+  Framing,
+  JsonFraming,
+  Sink,
+  Source
+}
+import org.apache.pekko.util.ByteString
 import org.mongodb.scala.bson.BsonDocument
 import com.bilalfazlani.CSVRow
 import java.nio.file.{Path, StandardOpenOption}
@@ -18,7 +24,7 @@ trait StreamFlows {
     Flow.fromFunction[String, BsonDocument](BsonDocument.apply)
 
   val byteString: Flow[CSVRow, ByteString, NotUsed] =
-    Flow.fromFunction[CSVRow, ByteString](x => ByteString.apply(x.toString))
+    Flow.fromFunction[CSVRow, ByteString](x => ByteString(x.toString))
 
   def fileSink(path: Path, overwrite: Boolean) = FileIO.toPath(
     path,

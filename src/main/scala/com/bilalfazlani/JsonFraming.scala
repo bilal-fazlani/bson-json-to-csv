@@ -1,11 +1,17 @@
 package com.bilalfazlani
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.IOResult
-import akka.stream.alpakka.json.scaladsl.JsonReader
-import akka.stream.scaladsl.{Flow, Framing, JsonFraming, Keep, Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.IOResult
+import org.apache.pekko.stream.scaladsl.{
+  Flow,
+  Framing,
+  JsonFraming,
+  Keep,
+  Sink,
+  Source
+}
+import org.apache.pekko.util.ByteString
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
@@ -19,8 +25,8 @@ extension [Mat](flow: Flow[ByteString, ByteString, Mat])
   private def separate(separator: ByteString, inclusive: Boolean) =
     flow
       .statefulMapConcat(() => {
-        var total: ByteString = ByteString.emptyByteString
-        var last: ByteString = ByteString.emptyByteString
+        var total: ByteString = ByteString.empty
+        var last: ByteString = ByteString.empty
         var inHeader = true
         current => {
           if (inHeader) {
@@ -56,7 +62,9 @@ class JsonFraming {
   ): Source[String, Future[IOResult]] = {
     source
       .via(Flow[ByteString].dropUntil(ByteString.fromString("{"), true))
-      .via(akka.stream.scaladsl.JsonFraming.objectScanner(Int.MaxValue))
+      .via(
+        org.apache.pekko.stream.scaladsl.JsonFraming.objectScanner(Int.MaxValue)
+      )
       .map(_.utf8String)
   }
 }

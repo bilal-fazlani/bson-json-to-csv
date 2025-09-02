@@ -1,10 +1,10 @@
 package com.bilalfazlani
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.ByteString
 import scala.concurrent.{ExecutionContext, Future}
-import akka.stream.IOResult
+import org.apache.pekko.stream.IOResult
 
 class SchemaGenTest extends CustomFixtures {
   `can generate schema`(
