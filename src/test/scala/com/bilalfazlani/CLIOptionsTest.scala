@@ -76,4 +76,20 @@ class CLIOptionsTest extends FunSuite {
     val options3 = CLIOptions(filenameColumnName = "source")
     assertEquals(options3.filenameColumnName, "source")
   }
+
+  test("getOutputFile should handle current directory '.' correctly") {
+    val currentDir = new File(".")
+    val config = CLIOptions(
+      inputPath = currentDir,
+      outputFile = None
+    )
+
+    val outputFile = CLIOptions.getOutputFile(config)
+    val actualDirName = currentDir.getCanonicalFile.getName
+    val expectedName = s"${actualDirName}_combined.csv"
+
+    assertEquals(outputFile.getName, expectedName)
+    // Should not be "._combined.csv"
+    assert(!outputFile.getName.startsWith("._"))
+  }
 }

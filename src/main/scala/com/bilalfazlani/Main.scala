@@ -30,7 +30,8 @@ object CLIOptions {
     config.outputFile.getOrElse {
       if (config.inputPath.isDirectory) {
         // Directory processing: default to directoryname_combined.csv
-        val directoryName = config.inputPath.getName
+        val absolutePath = config.inputPath.getCanonicalFile
+        val directoryName = absolutePath.getName
         new File(s"${directoryName}_combined.csv")
       } else {
         // File processing: existing logic
