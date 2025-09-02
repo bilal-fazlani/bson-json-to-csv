@@ -53,9 +53,13 @@ extension (doc: BsonValue) {
             case None => None
           }
       case Index(index) =>
-        toOptionSafe(currentValue.asArray()).flatMap(x =>
-          toOptionSafe(x.get(index))
-        ) match {
+        toOptionSafe(currentValue.asArray()).flatMap { x =>
+          if (index >= 0 && index < x.size()) {
+            toOptionSafe(x.get(index))
+          } else {
+            None
+          }
+        } match {
           case s @ Some(bsonValue) =>
             if (currentIndex == path.seq.length - 1) s
             else getValue(path, bsonValue, currentIndex + 1)

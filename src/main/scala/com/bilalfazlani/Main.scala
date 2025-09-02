@@ -14,24 +14,38 @@ import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 case class CLIOptions(
-    inputFile: File = new File("."),
+    inputPath: File = new File("."),
     outputFile: Option[File] = None,
+    filePattern: String = "*.{json,bson}",
+    recursive: Boolean = false,
+    addFilenameColumn: Option[Boolean] = None,
+    filenameColumnName: String = "_filename",
     noColor: Boolean = false,
     overrideFile: Boolean = false
 )
 
 object CLIOptions {
-  def getOutputFile(inputFile: File): File =
-    if inputFile.toPath.toString != "." && inputFile.exists then
-      val fileName = inputFile.getName
-      val reg = "(.*)\\.(.*)".r
-      val withoutExtension = fileName match {
-        case reg(n, _) => n
-        case x         => x
+  def getOutputFile(config: CLIOptions): File =
+    config.outputFile.getOrElse {
+      if (config.inputPath.isDirectory) {
+        // Directory processing: default to directoryname_combined.csv
+        val directoryName = config.inputPath.getName
+        new File(s"${directoryName}_combined.csv")
+      } else {
+        // File processing: existing logic
+        val inputFile = config.inputPath
+        if inputFile.toPath.toString != "." && inputFile.exists then
+          val fileName = inputFile.getName
+          val reg = "(.*)\\.(.*)".r
+          val withoutExtension = fileName match {
+            case reg(n, _) => n
+            case x         => x
+          }
+          val parent = Path.of(inputFile.getCanonicalPath).getParent.toString
+          Paths.get(parent, withoutExtension + ".csv").toFile
+        else File(".")
       }
-      val parent = Path.of(inputFile.getCanonicalPath).getParent.toString
-      Paths.get(parent, withoutExtension + ".csv").toFile
-    else File(".")
+    }
 }
 
 object Main extends StreamFlows {
@@ -69,40 +83,56 @@ object Main extends StreamFlows {
           "convert nested bson/json files to flat csv files\n" +
             getVersionString
         ),
-        arg[File]("input-file")
-          .valueName("<file>")
+        arg[File]("input-path")
+          .valueName("<path>")
           .required()
-          .text("[REQUIRED] input bson file")
+          .text("[REQUIRED] input file or directory path")
           .validate(f =>
             if (f.exists()) success
-            else failure(s"file ${f.getPath} does not exist")
+            else failure(s"path ${f.getPath} does not exist")
           )
-          .action((f, c) => c.copy(inputFile = f)),
+          .action((f, c) => c.copy(inputPath = f)),
         arg[Option[File]]("output-file")
           .valueName("<file>")
-          .text("Path for output csv file. Default: <input-file>.csv")
+          .text(
+            "output CSV file. Default: <input>.csv or <dirname>_combined.csv"
+          )
           .optional()
           .action((o, c) => c.copy(outputFile = o)),
+        opt[String]("pattern")
+          .valueName("<pattern>")
+          .text("file pattern for directories. Default: *.{json,bson}")
+          .action((pattern, c) => c.copy(filePattern = pattern)),
+        opt[Unit]('r', "recursive")
+          .text("process directories recursively")
+          .action((_, c) => c.copy(recursive = true)),
+        opt[Unit]("add-filename")
+          .text("add filename column (auto-enabled for directories)")
+          .action((_, c) => c.copy(addFilenameColumn = Some(true))),
+        opt[Unit]("no-filename")
+          .text("disable filename column for directories")
+          .action((_, c) => c.copy(addFilenameColumn = Some(false))),
+        opt[String]("filename-column")
+          .valueName("<name>")
+          .text("custom filename column name. Default: _filename")
+          .action((name, c) => c.copy(filenameColumnName = name)),
         opt[Unit]('f', "overwrite")
-          .text("delete and create a new new outfile if one already exists")
-          .optional()
+          .text("delete and create new output file if exists")
           .action((_, c) => c.copy(overrideFile = true)),
         opt[Unit]("no-color")
-          .text("do not use colors for output text")
-          .optional()
+          .text("disable colored output")
           .action((_, c) => c.copy(noColor = true)),
         help("help").text("print help text"),
-        checkConfig {
-          case x @ CLIOptions(_, _, _, false) =>
-            val outputFile =
-              x.outputFile.getOrElse(CLIOptions.getOutputFile(x.inputFile))
-            if outputFile.toPath.toString != "." && outputFile.exists then
+        checkConfig { config =>
+          if (!config.overrideFile) {
+            val outputFile = CLIOptions.getOutputFile(config)
+            if (outputFile.toPath.toString != "." && outputFile.exists) {
               failure(
                 s"file ${outputFile.toPath} already exists." +
                   s"\nUse 'overwrite' option to ignore this error"
               )
-            else success
-          case _ => success
+            } else success
+          } else success
         }
       )
     }
@@ -117,52 +147,26 @@ object Main extends StreamFlows {
   def run(options: CLIOptions): Unit = {
     given ColorContext = ColorContext(enable = !options.noColor)
     printVersionUpdate
-    println("Input: ".bold + options.inputFile.toPath)
-    val outputFile =
-      options.outputFile.getOrElse(CLIOptions.getOutputFile(options.inputFile))
-    println("Output: ".bold + outputFile.toPath.toString)
+    println("Input: ".bold + options.inputPath.toPath)
 
     given system: ActorSystem = ActorSystem("main")
-
     import system.dispatcher
-    val fileTypeFinder = new FileTypeFinder
-    print("File type: ".bold)
 
-    fileTypeFinder
-      .find(file(options.inputFile.toPath))
-      .flatMap { fileType =>
-        println(fileType.toString.yellow)
-        val jsonFraming = new JsonFraming
-        val schemaGen = new SchemaGen(jsonFraming)
-        schemaGen
-          .generate(file(options.inputFile.toPath))
-          .alsoTo(Sink.foreach { (x: Schema) =>
-            val columns = s"${x.paths.size} unique fields".yellow
-            val rows = s"${x.rows} records".yellow
-            val title = "Generating schema".bold
-            print(s"\r$title: found $columns in $rows ")
-          })
-          .toMat(Sink.last)(Keep.both)
-          .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
-          .run
-          .flatMap { schema =>
-            if (schema.rows == 0) throw Error.NoRows
-            else if (schema.paths.size == 0) throw Error.NoFields
-            else println("DONE".green.bold)
-            val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
-            val stream = csvGen.generateCsv(file(options.inputFile.toPath))
-            stream
-              .via(byteString)
-              .toMat(
-                fileSink(outputFile.toPath, options.overrideFile)
-              )(Keep.both)
-              .mapMaterializedValue(a => a._1.flatMap(_ => a._2))
-              .run()
-          }
-      }
+    val processingFuture = if (options.inputPath.isDirectory) {
+      // Directory processing
+      val directoryProcessor = new DirectoryProcessor()
+      directoryProcessor.processDirectory(options)
+    } else {
+      // Single file processing (existing logic)
+      processSingleFile(options)
+    }
+
+    processingFuture
       .onComplete {
         case Success(_) =>
-          println("DONE".green.bold)
+          if (!options.inputPath.isDirectory) {
+            println("DONE".green.bold)
+          }
           terminate
         case Failure(Error.NoRows) =>
           println("FAILED".red.bold)
@@ -194,6 +198,72 @@ object Main extends StreamFlows {
           terminate
           err.printStackTrace
           sys.exit(1)
+      }
+  }
+
+  private def processSingleFile(
+      options: CLIOptions
+  )(using ActorSystem, ColorContext): scala.concurrent.Future[Unit] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    val outputFile = CLIOptions.getOutputFile(options)
+    println("Output: ".bold + outputFile.toPath.toString)
+
+    val fileTypeFinder = new FileTypeFinder
+    print("File type: ".bold)
+
+    fileTypeFinder
+      .find(file(options.inputPath.toPath))
+      .flatMap { fileType =>
+        println(fileType.toString.yellow)
+        val jsonFraming = new JsonFraming
+        val schemaGen = new SchemaGen(jsonFraming)
+        schemaGen
+          .generate(file(options.inputPath.toPath))
+          .alsoTo(Sink.foreach { (x: Schema) =>
+            val columns = s"${x.paths.size} unique fields".yellow
+            val rows = s"${x.rows} records".yellow
+            val title = "Generating schema".bold
+            print(s"\r$title: found $columns in $rows ")
+          })
+          .toMat(Sink.last)(Keep.both)
+          .mapMaterializedValue(x => x._1.flatMap(_ => x._2))
+          .run()
+          .flatMap { schema =>
+            if (schema.rows == 0) throw Error.NoRows
+            else if (schema.paths.size == 0) throw Error.NoFields
+            else println("DONE".green.bold)
+
+            // Check if filename column should be added for single file
+            val includeFilename = options.addFilenameColumn.getOrElse(false)
+
+            if (includeFilename) {
+              // Use DirectoryCsvGen for single file with filename column
+              val schemaWithFilename =
+                SchemaWithFilename(schema, true, options.filenameColumnName)
+              val filename = options.inputPath.getName
+              val filesWithSources =
+                List((filename, file(options.inputPath.toPath)))
+              val csvGen = new DirectoryCsvGen(
+                schemaWithFilename,
+                Printer.console,
+                jsonFraming
+              )
+              csvGen
+                .generateCsv(filesWithSources)
+                .via(byteString)
+                .runWith(fileSink(outputFile.toPath, options.overrideFile))
+                .map(_ => ())
+            } else {
+              // Use original CsvGen for single file without filename column
+              val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
+              val stream = csvGen.generateCsv(file(options.inputPath.toPath))
+              stream
+                .via(byteString)
+                .runWith(fileSink(outputFile.toPath, options.overrideFile))
+                .map(_ => ())
+            }
+          }
       }
   }
 }
