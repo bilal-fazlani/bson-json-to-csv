@@ -10,9 +10,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: checkout
       uses: actions/checkout@v4
@@ -22,5 +20,6 @@ jobs:
       uses: laughedelic/coursier-setup@v1
       with:
         jvm: graalvm-community:24.0.2
+    - uses: sbt/setup-sbt@v1        
     - name: test
       run: sbtn test
