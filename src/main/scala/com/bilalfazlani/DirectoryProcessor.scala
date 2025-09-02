@@ -38,8 +38,23 @@ class DirectoryProcessor(using ActorSystem, ExecutionContext, ColorContext)
 
     // Build unified schema
     buildUnifiedSchema(files).flatMap { baseSchema =>
+      // Apply field filtering if specified
+      val finalSchema = options.selectFields match {
+        case Some(fields) =>
+          baseSchema.filterFields(fields) match {
+            case Right(filteredSchema) =>
+              println(
+                s"Field selection: ${filteredSchema.paths.size} of ${baseSchema.paths.size} fields selected".cyan
+              )
+              filteredSchema
+            case Left(error) =>
+              throw new RuntimeException(s"Field selection error: $error")
+          }
+        case None => baseSchema
+      }
+
       val schemaWithFilename = SchemaWithFilename(
-        baseSchema,
+        finalSchema,
         includeFilename,
         options.filenameColumnName
       )

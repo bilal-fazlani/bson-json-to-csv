@@ -21,7 +21,8 @@ case class CLIOptions(
     addFilenameColumn: Option[Boolean] = None,
     filenameColumnName: String = "_filename",
     noColor: Boolean = false,
-    overrideFile: Boolean = false
+    overrideFile: Boolean = false,
+    selectFields: Option[List[String]] = None
 )
 
 object CLIOptions {
@@ -122,6 +123,12 @@ object Main extends StreamFlows {
         opt[Unit]("no-color")
           .text("disable colored output")
           .action((_, c) => c.copy(noColor = true)),
+        opt[Seq[String]]("select")
+          .valueName("<field1,field2,...>")
+          .text(
+            "comma-separated list of jq-style field selectors (e.g., '.name,.location.city,.tags[]')"
+          )
+          .action((fields, c) => c.copy(selectFields = Some(fields.toList))),
         help("help").text("print help text"),
         checkConfig { config =>
           if (!config.overrideFile) {
@@ -234,13 +241,32 @@ object Main extends StreamFlows {
             else if (schema.paths.size == 0) throw Error.NoFields
             else println("DONE".green.bold)
 
+            // Apply field filtering if specified
+            val finalSchema = options.selectFields match {
+              case Some(fields) =>
+                schema.filterFields(fields) match {
+                  case Right(filteredSchema) =>
+                    println(
+                      s"Field selection: ${filteredSchema.paths.size} of ${schema.paths.size} fields selected".cyan
+                    )
+                    filteredSchema
+                  case Left(error) =>
+                    throw new RuntimeException(s"Field selection error: $error")
+                }
+              case None => schema
+            }
+
             // Check if filename column should be added for single file
             val includeFilename = options.addFilenameColumn.getOrElse(false)
 
             if (includeFilename) {
               // Use DirectoryCsvGen for single file with filename column
               val schemaWithFilename =
-                SchemaWithFilename(schema, true, options.filenameColumnName)
+                SchemaWithFilename(
+                  finalSchema,
+                  true,
+                  options.filenameColumnName
+                )
               val filename = options.inputPath.getName
               val filesWithSources =
                 List((filename, file(options.inputPath.toPath)))
@@ -256,7 +282,7 @@ object Main extends StreamFlows {
                 .map(_ => ())
             } else {
               // Use original CsvGen for single file without filename column
-              val csvGen = new CsvGen(schema, Printer.console, jsonFraming)
+              val csvGen = new CsvGen(finalSchema, Printer.console, jsonFraming)
               val stream = csvGen.generateCsv(file(options.inputPath.toPath))
               stream
                 .via(byteString)

@@ -12,6 +12,36 @@ import com.bilalfazlani.Node.*
 case class Schema(paths: Set[JsonPath] = Set.empty, rows: Long = 0) {
   infix def +(morePaths: Set[JsonPath]): Schema =
     Schema(paths ++ morePaths, rows + 1)
+
+  /** Filter schema to only include selected fields */
+  def filterFields(selectedFields: List[String]): Either[String, Schema] = {
+    selectedFields match {
+      case Nil    => Right(this) // No selection means include all fields
+      case fields =>
+        // Parse all field selectors
+        val parsedPatterns = fields.map(FieldSelector.parseSelector)
+        val errors = parsedPatterns.collect { case Left(error) => error }
+
+        if (errors.nonEmpty) {
+          Left(s"Invalid field selectors: ${errors.mkString(", ")}")
+        } else {
+          val patterns = parsedPatterns.collect { case Right(pattern) =>
+            pattern
+          }
+
+          // Filter the existing paths to only include those that match the patterns
+          val filteredPaths = paths.filter { discoveredPath =>
+            FieldSelector.isPathSelected(discoveredPath, patterns)
+          }
+
+          if (filteredPaths.isEmpty) {
+            Left("No fields matched the specified selectors")
+          } else {
+            Right(Schema(filteredPaths, rows))
+          }
+        }
+    }
+  }
 }
 
 class SchemaGen(jsonFraming: JsonFraming) extends StreamFlows {
