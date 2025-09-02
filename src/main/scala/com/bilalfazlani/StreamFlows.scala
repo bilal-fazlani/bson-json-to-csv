@@ -2,15 +2,9 @@ package com.bilalfazlani
 
 import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.IOResult
-import org.apache.pekko.stream.scaladsl.{
-  FileIO,
-  Flow,
-  Framing,
-  JsonFraming,
-  Sink,
-  Source
-}
+import org.apache.pekko.stream.scaladsl.{FileIO, Flow, Sink, Source}
 import org.apache.pekko.util.ByteString
+import scala.annotation.nowarn
 import org.mongodb.scala.bson.BsonDocument
 import com.bilalfazlani.CSVRow
 import java.nio.file.{Path, StandardOpenOption}
@@ -37,13 +31,12 @@ trait StreamFlows {
     0
   )
 
+  @nowarn("cat=deprecation")
   def unique[T]: Flow[T, T, NotUsed] =
     Flow[T].statefulMapConcat(() => {
       var set = Set.empty[T]
       (str: T) => {
-        val list =
-          if (set.contains(str)) List.empty
-          else List(str)
+        val list = if (set.contains(str)) List.empty else List(str)
         set += str
         list
       }

@@ -1,11 +1,10 @@
 package com.bilalfazlani
 
-import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.*
 import org.apache.pekko.util.ByteString
 import org.apache.pekko.stream.IOResult
-import org.mongodb.scala.bson.{BsonArray, BsonDocument, BsonValue}
-import scala.concurrent.{Future, ExecutionContext}
+import org.mongodb.scala.bson.{BsonArray, BsonDocument}
+import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 import com.bilalfazlani.Node.*

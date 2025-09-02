@@ -32,7 +32,7 @@ extension (doc: BsonValue) {
       Option(v)
     } catch {
       case NonFatal(_: NullPointerException)          => None
-      case NonFatal(x: BsonInvalidOperationException) => None
+      case NonFatal(_: BsonInvalidOperationException) => None
     }
 
   @tailrec
@@ -45,9 +45,8 @@ extension (doc: BsonValue) {
       case Name(name) =>
         if (currentValue.isNull) None
         else
-          toOptionSafe(currentValue.asDocument()).flatMap(x =>
-            toOptionSafe(x.get(name))
-          ) match {
+          toOptionSafe(currentValue.asDocument())
+            .flatMap(x => toOptionSafe(x.get(name))) match {
             case s @ Some(value) =>
               if (currentIndex == path.seq.length - 1) s
               else getValue(path, value, currentIndex + 1)

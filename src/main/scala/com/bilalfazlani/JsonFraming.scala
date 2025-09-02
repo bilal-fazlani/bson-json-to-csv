@@ -1,19 +1,11 @@
 package com.bilalfazlani
 
-import org.apache.pekko.NotUsed
-import org.apache.pekko.actor.ActorSystem
+// NotUsed not used
 import org.apache.pekko.stream.IOResult
-import org.apache.pekko.stream.scaladsl.{
-  Flow,
-  Framing,
-  JsonFraming,
-  Keep,
-  Sink,
-  Source
-}
+import org.apache.pekko.stream.scaladsl.{Flow, Source}
 import org.apache.pekko.util.ByteString
 import scala.concurrent.Future
-import scala.util.control.NonFatal
+import scala.annotation.nowarn
 
 extension [Mat](flow: Flow[ByteString, ByteString, Mat])
   def dropUntil(
@@ -22,6 +14,7 @@ extension [Mat](flow: Flow[ByteString, ByteString, Mat])
   ): Flow[ByteString, ByteString, Mat] =
     separate(separator, inclusive).drop(1)
 
+  @nowarn("cat=deprecation")
   private def separate(separator: ByteString, inclusive: Boolean) =
     flow
       .statefulMapConcat(() => {

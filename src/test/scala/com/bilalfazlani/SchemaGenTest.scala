@@ -3,7 +3,7 @@ package com.bilalfazlani
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import org.apache.pekko.stream.IOResult
 
 class SchemaGenTest extends CustomFixtures {
@@ -67,7 +67,7 @@ class SchemaGenTest extends CustomFixtures {
   def `can generate schema`(source: String, name: String) =
     actorSystemFixture.test(s"can generate schema: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 
@@ -168,7 +168,7 @@ class SchemaGenTest extends CustomFixtures {
   def `array support`(source: String, name: String) =
     actorSystemFixture.test(s"array support: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 
@@ -224,7 +224,7 @@ class SchemaGenTest extends CustomFixtures {
   def `matrix support`(source: String, name: String) =
     actorSystemFixture.test(s"matrix support: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 
@@ -302,7 +302,7 @@ class SchemaGenTest extends CustomFixtures {
   def `conflicting data types`(source: String, name: String) =
     actorSystemFixture.test(s"conflicting data types: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 
@@ -347,7 +347,7 @@ class SchemaGenTest extends CustomFixtures {
   def `empty records`(source: String, name: String) =
     actorSystemFixture.test(s"empty records: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 
@@ -383,7 +383,7 @@ class SchemaGenTest extends CustomFixtures {
   def `invalid text`(source: String, name: String) =
     actorSystemFixture.test(s"invalid text before json: $name") { actorSystem =>
       implicit val mat: Materializer = Materializer(actorSystem)
-      given ExecutionContext = actorSystem.dispatcher
+      // ExecutionContext not used directly in this test
       val jsonFraming = new JsonFraming
       val schemaGen = new SchemaGen(jsonFraming)
 

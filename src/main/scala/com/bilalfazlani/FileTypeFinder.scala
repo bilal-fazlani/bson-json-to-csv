@@ -1,7 +1,7 @@
 package com.bilalfazlani
 
 import org.apache.pekko.stream.{IOResult, Materializer}
-import org.apache.pekko.stream.scaladsl.{FileIO, Keep, Sink, Source}
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
 import FileTypeFinder.UnknownFileTypeException
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,9 +52,8 @@ class FileTypeFinder(using Materializer, ExecutionContext) {
       }
 
     stream
-      .toMat(Sink.last)(Keep.right)
-      .run()
-      .recover { case x: NoSuchElementException =>
+      .runWith(Sink.last)
+      .recover { case _: NoSuchElementException =>
         throw UnknownFileTypeException()
       }
   }

@@ -4,18 +4,12 @@ import com.bilalfazlani.rainbowcli.*
 import scala.util.{Success, Failure}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Framing.FramingException
-import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
-import org.mongodb.scala.bson.*
+import org.apache.pekko.stream.scaladsl.{Keep, Sink}
 import scopt.OParser
-import StringEncoder.*
 import java.io.File
 import org.bson.json.JsonParseException
-import java.nio.file.{Path, StandardOpenOption}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.control.NonFatal
 import FileTypeFinder.UnknownFileTypeException
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.*
 
@@ -32,7 +26,7 @@ object CLIOptions {
       val fileName = inputFile.getName
       val reg = "(.*)\\.(.*)".r
       val withoutExtension = fileName match {
-        case reg(n, e) => n
+        case reg(n, _) => n
         case x         => x
       }
       val parent = Path.of(inputFile.getCanonicalPath).getParent.toString
@@ -54,7 +48,7 @@ object Main extends StreamFlows {
 
   private def printVersionUpdate(using ColorContext) =
     AppVersion.check match {
-      case VersionCheck.UpdateAvailable(update, current) =>
+      case VersionCheck.UpdateAvailable(update, _) =>
         println(
           "[info] ".yellow.bold + "update ".yellow + s"v$update".green.bold + " available".yellow
         )
@@ -92,11 +86,11 @@ object Main extends StreamFlows {
         opt[Unit]('f', "overwrite")
           .text("delete and create a new new outfile if one already exists")
           .optional()
-          .action((o, c) => c.copy(overrideFile = true)),
+          .action((_, c) => c.copy(overrideFile = true)),
         opt[Unit]("no-color")
           .text("do not use colors for output text")
           .optional()
-          .action((o, c) => c.copy(noColor = true)),
+          .action((_, c) => c.copy(noColor = true)),
         help("help").text("print help text"),
         checkConfig {
           case x @ CLIOptions(_, _, _, false) =>

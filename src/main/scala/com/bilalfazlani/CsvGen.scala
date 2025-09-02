@@ -2,15 +2,11 @@ package com.bilalfazlani
 
 import com.bilalfazlani.rainbowcli.*
 import org.apache.pekko.NotUsed
-import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.IOResult
-import org.apache.pekko.stream.scaladsl.Framing.FramingException
-import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
+import org.apache.pekko.stream.scaladsl.{Keep, Source}
 import org.apache.pekko.util.ByteString
 import org.mongodb.scala.bson.*
 import StringEncoder.*
-import scala.util.control.NonFatal
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using
@@ -66,6 +62,7 @@ class CsvGen(schema: Schema, printer: Printer, jsonFraming: JsonFraming)(using
       case Some(x: BsonDecimal128) => x.encodeToString
       case Some(x: BsonTimestamp)  => x.encodeToString
       case Some(_: BsonNull)       => ""
+      case Some(x)                 => x.toString
     })
       .replaceAll(",", "")
       .replaceAll("\n", "")

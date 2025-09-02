@@ -7,7 +7,16 @@ Compile / mainClass := Some("com.bilalfazlani.Main")
 
 scalaVersion := "3.7.2"
 
-scalacOptions += "-Wunused:all"
+// Enable strict warnings and fail build on warnings
+scalacOptions ++= Seq(
+  "-Wunused:all",
+  "-deprecation",
+  "-feature",
+  "-Werror"
+)
+
+// Format sources on compile
+ThisBuild / scalafmtOnCompile := true
 
 enablePlugins(BuildInfoPlugin)
 enablePlugins(NativeImagePlugin)

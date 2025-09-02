@@ -6,8 +6,6 @@ import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, DefaultCSVFormat}
 import munit.FunSuite
-import org.junit.Assert
-import org.mongodb.scala.bson.{BsonDocument, BsonInt32, BsonString, BsonValue}
 import com.bilalfazlani.rainbowcli.ColorContext
 
 import java.io.{Reader, StringReader}
